@@ -44,6 +44,54 @@ def formatear_hora_12h(hora_str):
     except:
         return str(hora_str)
 
+def enviar_whatsapp(numero, mensaje):
+    if not numero:
+        return False
+
+    numero = str(numero).replace("+", "").replace(" ", "").strip()
+    token = os.getenv("WHATSAPP_TOKEN")
+    phone_number_id = os.getenv("PHONE_NUMBER_ID")
+
+    if not token or not phone_number_id:
+        print("Faltan WHATSAPP_TOKEN o PHONE_NUMBER_ID")
+        return False
+
+    url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "messaging_product": "whatsapp",
+        "to": numero,
+        "type": "text",
+        "text": {"body": mensaje}
+    }
+
+    try:
+        r = requests.post(url, headers=headers, json=data, timeout=15)
+        print("WhatsApp status:", r.status_code, r.text)
+        return r.status_code < 400
+    except Exception as e:
+        print("Error enviando WhatsApp:", e)
+        return False
+
+
+def obtener_barbero_por_id(barbero_id):
+    data = supabase_request(
+        "GET",
+        "barberos",
+        params={
+            "select": "id,nombre,slug,telefono,activo",
+            "id": f"eq.{barbero_id}",
+            "limit": "1"
+        }
+    )
+    if data and len(data) > 0:
+        return data[0]
+    return None
+
+
 def obtener_nombre_barbero_desde_relacion(cita):
     rel = cita.get("barberos")
     if isinstance(rel, list) and rel:
@@ -180,8 +228,39 @@ def guardar():
         flash("No se pudo guardar la cita.")
         return redirect(url_for("index"))
 
+    barbero = obtener_barbero_por_id(barbero_id)
+
+    nombre_barbero = barbero["nombre"] if barbero else "tu barbero"
+    telefono_barbero = barbero["telefono"] if barbero else None
+
+    mensaje_cliente = (
+        f"✅ *Cita confirmada* \n\n"
+        f"Hola {cliente}, tu cita para *{servicio}* quedó agendada.\n"
+        f"📅 Fecha: {fecha}\n"
+        f"🕒 Hora: {hora_12h}\n"
+        f"💈 Barbero: {nombre_barbero}"
+    )
+
+    mensaje_barbero = (
+        f"📌 *Nueva cita asignada*\n\n"
+        f"Cliente: {cliente}\n"
+        f"📞 WhatsApp: 506{telefono}\n"
+        f"💈 Servicio: {servicio}\n"
+        f"📅 Fecha: {fecha}\n"
+        f"🕒 Hora: {hora_12h}"
+    )
+
+    enviar_whatsapp(f"506{telefono}", mensaje_cliente)
+
+    if telefono_barbero:
+        enviar_whatsapp(telefono_barbero, mensaje_barbero)
+
     flash("Cita creada correctamente.")
     return redirect(url_for("index"))
+
+ 
+
+
 
 @app.route("/horas")
 def horas():
