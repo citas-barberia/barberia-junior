@@ -306,6 +306,10 @@ def guardar():
     if telefono_barbero:
         enviar_whatsapp(telefono_barbero, mensaje_barbero)
 
+    print("Telefono cliente:", f"506{telefono}")
+    print("Telefono barbero:", telefono_barbero)
+    print("Nombre barbero:", nombre_barbero)
+
     flash("Cita creada correctamente.")
     return redirect(url_for("index"))
 
