@@ -29,6 +29,29 @@ def supabase_headers():
         "Accept": "application/json"
     }
 
+def cambiar_estado_cita(cita_id, nuevo_estado):
+    return supabase_request(
+        "PATCH",
+        "citas",
+        params={"id": f"eq.{cita_id}"},
+        json_body={"estado": nuevo_estado},
+        extra_headers={"Prefer": "return=minimal"}
+    )
+
+def formatear_hora_12h(hora_str):
+    try:
+        return datetime.strptime(str(hora_str), "%H:%M:%S").strftime("%I:%M %p")
+    except:
+        return str(hora_str)
+
+def obtener_nombre_barbero_desde_relacion(cita):
+    rel = cita.get("barberos")
+    if isinstance(rel, list) and rel:
+        return rel[0].get("nombre", "")
+    if isinstance(rel, dict):
+        return rel.get("nombre", "")
+    return ""    
+
 def obtener_citas_con_barbero():
     data = supabase_request(
         "GET",
@@ -229,26 +252,129 @@ def panel():
     barberos = obtener_barberos_activos()
 
     citas = []
-    for c in citas_raw:
-        nombre_barbero = ""
-        if c.get("barberos"):
-            nombre_barbero = c["barberos"].get("nombre", "")
+    total_citas = 0
+    total_activas = 0
+    total_canceladas = 0
+    total_atendidas = 0
+    total_cobrado = 0
 
-        citas.append({
+    for c in citas_raw:
+        nombre_barbero = obtener_nombre_barbero_desde_relacion(c)
+        estado = (c.get("estado") or "activa").lower()
+        precio = int(c.get("precio") or 0)
+
+        cita = {
             "id": c.get("id"),
             "cliente": c.get("cliente"),
             "cliente_id": c.get("cliente_id"),
             "servicio": c.get("servicio"),
-            "precio": c.get("precio"),
+            "precio": precio,
             "fecha": c.get("fecha"),
-            "hora": c.get("hora"),
+            "hora": formatear_hora_12h(c.get("hora")),
             "duracion": c.get("duracion"),
-            "estado": c.get("estado"),
+            "estado": estado,
             "barbero_id": c.get("barbero_id"),
             "barbero_nombre": nombre_barbero
-        })
+        }
+        citas.append(cita)
 
-    return render_template("panel.html", citas=citas, barberos=barberos)
+        total_citas += 1
+        if estado == "activa":
+            total_activas += 1
+        elif estado == "cancelada":
+            total_canceladas += 1
+        elif estado == "atendida":
+            total_atendidas += 1
+            total_cobrado += precio
+
+    stats = {
+        "total_citas": total_citas,
+        "total_activas": total_activas,
+        "total_canceladas": total_canceladas,
+        "total_atendidas": total_atendidas,
+        "total_cobrado": total_cobrado
+    }
+
+    return render_template("panel.html", citas=citas, barberos=barberos, stats=stats)
+
+@app.route("/panel/<slug_barbero>")
+def panel_barbero(slug_barbero):
+    citas_raw = obtener_citas_con_barbero()
+    barberos = obtener_barberos_activos()
+
+    barbero_obj = None
+    for b in barberos:
+        if b.get("slug") == slug_barbero:
+            barbero_obj = b
+            break
+
+    if not barbero_obj:
+        return "Barbero no encontrado", 404
+
+    citas = []
+    total_citas = 0
+    total_activas = 0
+    total_canceladas = 0
+    total_atendidas = 0
+    total_cobrado = 0
+
+    for c in citas_raw:
+        if int(c.get("barbero_id")) != int(barbero_obj["id"]):
+            continue
+
+        estado = (c.get("estado") or "activa").lower()
+        precio = int(c.get("precio") or 0)
+
+        cita = {
+            "id": c.get("id"),
+            "cliente": c.get("cliente"),
+            "cliente_id": c.get("cliente_id"),
+            "servicio": c.get("servicio"),
+            "precio": precio,
+            "fecha": c.get("fecha"),
+            "hora": formatear_hora_12h(c.get("hora")),
+            "duracion": c.get("duracion"),
+            "estado": estado,
+            "barbero_id": c.get("barbero_id"),
+            "barbero_nombre": barbero_obj["nombre"]
+        }
+        citas.append(cita)
+
+        total_citas += 1
+        if estado == "activa":
+            total_activas += 1
+        elif estado == "cancelada":
+            total_canceladas += 1
+        elif estado == "atendida":
+            total_atendidas += 1
+            total_cobrado += precio
+
+    stats = {
+        "total_citas": total_citas,
+        "total_activas": total_activas,
+        "total_canceladas": total_canceladas,
+        "total_atendidas": total_atendidas,
+        "total_cobrado": total_cobrado,
+        "nombre_barbero": barbero_obj["nombre"]
+    }
+
+    return render_template("panel_barbero.html", citas=citas, stats=stats, barbero=barbero_obj)
+
+@app.route("/panel/cancelar", methods=["POST"])
+def panel_cancelar():
+    cita_id = request.form.get("id")
+    if cita_id:
+        cambiar_estado_cita(cita_id, "cancelada")
+        flash("Cita cancelada correctamente.")
+    return redirect(request.referrer or url_for("panel"))
+
+@app.route("/panel/atendida", methods=["POST"])
+def panel_atendida():
+    cita_id = request.form.get("id")
+    if cita_id:
+        cambiar_estado_cita(cita_id, "atendida")
+        flash("Cita marcada como atendida.")
+    return redirect(request.referrer or url_for("panel"))
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
