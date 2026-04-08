@@ -1,3 +1,5 @@
+import token
+
 from flask import Flask, render_template, request, redirect, flash, url_for, jsonify
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -26,8 +28,8 @@ def enviar_template_whatsapp(numero, template_name, variables, language_code="es
         return False
 
     numero = str(numero).replace("+", "").replace(" ", "").strip()
-    token = os.getenv("WHATSAPP_TOKEN")
-    phone_number_id = os.getenv("PHONE_NUMBER_ID")
+    token = (os.getenv("WHATSAPP_TOKEN") or "").strip()
+    phone_number_id = (os.getenv("PHONE_NUMBER_ID") or "").strip()
 
     if not token or not phone_number_id:
         print("Faltan WHATSAPP_TOKEN o PHONE_NUMBER_ID")
@@ -100,8 +102,8 @@ def enviar_whatsapp(numero, mensaje):
         return False
 
     numero = str(numero).replace("+", "").replace(" ", "").strip()
-    token = os.getenv("WHATSAPP_TOKEN")
-    phone_number_id = os.getenv("PHONE_NUMBER_ID")
+    token = (os.getenv("WHATSAPP_TOKEN") or "").strip()
+    phone_number_id = (os.getenv("PHONE_NUMBER_ID") or "").strip()
 
     if not token or not phone_number_id:
         print("Faltan WHATSAPP_TOKEN o PHONE_NUMBER_ID")
@@ -297,7 +299,7 @@ def guardar():
         numero=f"506{telefono}",
         template_name="confirmacion_cita",
         variables=[cliente, servicio, fecha, hora_12h, nombre_barbero],
-        language_code="es"
+        language_code="es_ES"
     )
 
     # Barbero -> mensaje normal
