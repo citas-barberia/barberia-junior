@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de barberos</title>
+    <style>
+        * { box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #0f0f10; color: white; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; background: #1b1b1c; padding: 25px; border-radius: 20px; }
+        h1 { color: #D4AF37; margin-top: 0; }
+        .filters {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        select, input {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: #242425;
+            color: white;
+            font-size: 15px;
+        }
+        .table-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            text-align: left;
+        }
+        th {
+            color: #D4AF37;
+            background: #202021;
+        }
+        .tag {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .activa { background: #198754; color: white; }
+        .cancelada { background: #dc3545; color: white; }
+        .atendida { background: #0d6efd; color: white; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Panel de citas</h1>
+
+    <div class="filters">
+        <select id="filtro_barbero" onchange="filtrar()">
+            <option value="">Todos los barberos</option>
+            {% for b in barberos %}
+            <option value="{{ b.nombre }}">{{ b.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <select id="filtro_estado" onchange="filtrar()">
+            <option value="">Todos los estados</option>
+            <option value="activa">Activas</option>
+            <option value="cancelada">Canceladas</option>
+            <option value="atendida">Atendidas</option>
+        </select>
+
+        <input type="text" id="busqueda_cliente" placeholder="Buscar cliente..." oninput="filtrar()">
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Cliente</th>
+                    <th>Barbero</th>
+                    <th>Servicio</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tbody_citas">
+                {% for c in citas %}
+                <tr
+                    data-barbero="{{ c.barbero_nombre }}"
+                    data-estado="{{ c.estado }}"
+                    data-cliente="{{ c.cliente|lower }}"
+                >
+                    <td>{{ c.fecha }}</td>
+                    <td>{{ c.hora }}</td>
+                    <td>{{ c.cliente }}</td>
+                    <td>{{ c.barbero_nombre }}</td>
+                    <td>{{ c.servicio }}</td>
+                    <td>₡{{ c.precio }}</td>
+                    <td>
+                        <span class="tag {{ c.estado }}">{{ c.estado }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function filtrar() {
+    const barbero = document.getElementById("filtro_barbero").value.toLowerCase();
+    const estado = document.getElementById("filtro_estado").value.toLowerCase();
+    const cliente = document.getElementById("busqueda_cliente").value.toLowerCase();
+
+    const filas = document.querySelectorAll("#tbody_citas tr");
+
+    filas.forEach(fila => {
+        const filaBarbero = (fila.dataset.barbero || "").toLowerCase();
+        const filaEstado = (fila.dataset.estado || "").toLowerCase();
+        const filaCliente = (fila.dataset.cliente || "").toLowerCase();
+
+        const cumpleBarbero = !barbero || filaBarbero === barbero;
+        const cumpleEstado = !estado || filaEstado === estado;
+        const cumpleCliente = !cliente || filaCliente.includes(cliente);
+
+        fila.style.display = (cumpleBarbero && cumpleEstado && cumpleCliente) ? "" : "none";
+    });
+}
+</script>
+</body>
+</html>

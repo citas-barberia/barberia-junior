@@ -29,6 +29,17 @@ def supabase_headers():
         "Accept": "application/json"
     }
 
+def obtener_citas_con_barbero():
+    data = supabase_request(
+        "GET",
+        "citas",
+        params={
+            "select": "id,cliente,cliente_id,servicio,precio,fecha,hora,duracion,estado,barbero_id,barberos(nombre)",
+            "order": "fecha.asc,hora.asc"
+        }
+    )
+    return data or []
+
 def supabase_request(method, path, params=None, json_body=None, extra_headers=None):
     url = f"{SUPABASE_URL.rstrip('/')}/rest/v1/{path}"
     headers = supabase_headers()
@@ -211,6 +222,33 @@ def horas():
 @app.route("/test_barberos")
 def test_barberos():
     return jsonify(obtener_barberos_activos())
+
+@app.route("/panel")
+def panel():
+    citas_raw = obtener_citas_con_barbero()
+    barberos = obtener_barberos_activos()
+
+    citas = []
+    for c in citas_raw:
+        nombre_barbero = ""
+        if c.get("barberos"):
+            nombre_barbero = c["barberos"].get("nombre", "")
+
+        citas.append({
+            "id": c.get("id"),
+            "cliente": c.get("cliente"),
+            "cliente_id": c.get("cliente_id"),
+            "servicio": c.get("servicio"),
+            "precio": c.get("precio"),
+            "fecha": c.get("fecha"),
+            "hora": c.get("hora"),
+            "duracion": c.get("duracion"),
+            "estado": c.get("estado"),
+            "barbero_id": c.get("barbero_id"),
+            "barbero_nombre": nombre_barbero
+        })
+
+    return render_template("panel.html", citas=citas, barberos=barberos)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
