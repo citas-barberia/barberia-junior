@@ -21,6 +21,57 @@ servicios = {
     "Corte Niño": 4500,
 }
 
+def enviar_template_whatsapp(numero, template_name, variables, language_code="es"):
+    if not numero:
+        return False
+
+    numero = str(numero).replace("+", "").replace(" ", "").strip()
+    token = os.getenv("WHATSAPP_TOKEN")
+    phone_number_id = os.getenv("PHONE_NUMBER_ID")
+
+    if not token or not phone_number_id:
+        print("Faltan WHATSAPP_TOKEN o PHONE_NUMBER_ID")
+        return False
+
+    url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    body_parameters = []
+    for valor in variables:
+        body_parameters.append({
+            "type": "text",
+            "text": str(valor)
+        })
+
+    data = {
+        "messaging_product": "whatsapp",
+        "to": numero,
+        "type": "template",
+        "template": {
+            "name": template_name,
+            "language": {
+                "code": language_code
+            },
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": body_parameters
+                }
+            ]
+        }
+    }
+
+    try:
+        r = requests.post(url, headers=headers, json=data, timeout=15)
+        print("WhatsApp template status:", r.status_code, r.text)
+        return r.status_code < 400
+    except Exception as e:
+        print("Error enviando template WhatsApp:", e)
+        return False
+
 def supabase_headers():
     return {
         "apikey": SUPABASE_KEY,
@@ -139,7 +190,7 @@ def obtener_barberos_activos():
         "GET",
         "barberos",
         params={
-            "select": "id,nombre,slug,activo",
+            "select": "id,nombre,slug,telefono,activo",
             "activo": "eq.true",
             "order": "id.asc"
         }
@@ -229,29 +280,27 @@ def guardar():
         return redirect(url_for("index"))
 
     barbero = obtener_barbero_por_id(barbero_id)
-
     nombre_barbero = barbero["nombre"] if barbero else "tu barbero"
     telefono_barbero = barbero["telefono"] if barbero else None
 
-    mensaje_cliente = (
-        f"✅ *Cita confirmada* \n\n"
-        f"Hola {cliente}, tu cita para *{servicio}* quedó agendada.\n"
-        f"📅 Fecha: {fecha}\n"
-        f"🕒 Hora: {hora_12h}\n"
-        f"💈 Barbero: {nombre_barbero}"
-    )
-
     mensaje_barbero = (
-        f"📌 *Nueva cita asignada*\n\n"
+        f"📌 Nueva cita asignada\n\n"
         f"Cliente: {cliente}\n"
-        f"📞 WhatsApp: 506{telefono}\n"
-        f"💈 Servicio: {servicio}\n"
-        f"📅 Fecha: {fecha}\n"
-        f"🕒 Hora: {hora_12h}"
+        f"WhatsApp: 506{telefono}\n"
+        f"Servicio: {servicio}\n"
+        f"Fecha: {fecha}\n"
+        f"Hora: {hora_12h}"
     )
 
-    enviar_whatsapp(f"506{telefono}", mensaje_cliente)
+    # Cliente -> template aprobado en Meta
+    enviar_template_whatsapp(
+        numero=f"506{telefono}",
+        template_name="confirmacion_cita",
+        variables=[cliente, servicio, fecha, hora_12h, nombre_barbero],
+        language_code="es"
+    )
 
+    # Barbero -> mensaje normal
     if telefono_barbero:
         enviar_whatsapp(telefono_barbero, mensaje_barbero)
 
@@ -259,7 +308,6 @@ def guardar():
     return redirect(url_for("index"))
 
  
-
 
 
 @app.route("/horas")
