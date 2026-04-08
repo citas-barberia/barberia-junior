@@ -299,7 +299,7 @@ def guardar():
         numero=f"506{telefono}",
         template_name="confirmacion_cita",
         variables=[cliente, servicio, fecha, hora_12h, nombre_barbero],
-        language_code="es_ES"
+        language_code="es_CR"
     )
 
     # Barbero -> mensaje normal
