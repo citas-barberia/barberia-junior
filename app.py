@@ -516,14 +516,6 @@ def guardar():
     return redirect(url_for("index"))
 
 
-@app.route("/horas")
-def horas():
-    fecha_str = request.args.get("fecha")
-    barbero_id = request.args.get("barbero_id")
-
-    if not fecha_str or not barbero_id:
-        return jsonify([])
-
 
 @app.route("/horas")
 def horas():
