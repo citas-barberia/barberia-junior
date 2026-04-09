@@ -487,14 +487,15 @@ def guardar():
     fecha_bonita = formatear_fecha_es(fecha)
 
     # Cliente -> template aprobado en Meta
+    
     enviar_whatsapp_template_confirmacion(
-        numero=telefono,
-        cliente=cliente,
-        servicio=servicio,
-        fecha=fecha_bonita,
-        hora=hora_12h,
-        barbero=nombre_barbero
-    )
+    numero=telefono,
+    nombre_cliente=cliente,
+    nombre_barbero=nombre_barbero,
+    servicio=servicio,
+    fecha=fecha_bonita,
+    hora=hora_12h
+)
 
     # Barbero -> template aprobado en Meta
     if telefono_barbero:
@@ -513,6 +514,15 @@ def guardar():
 
     flash("Cita creada correctamente.")
     return redirect(url_for("index"))
+
+
+@app.route("/horas")
+def horas():
+    fecha_str = request.args.get("fecha")
+    barbero_id = request.args.get("barbero_id")
+
+    if not fecha_str or not barbero_id:
+        return jsonify([])
 
 
 @app.route("/horas")
