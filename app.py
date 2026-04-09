@@ -23,6 +23,57 @@ servicios = {
     "Corte Niño": 4500,
 }
 
+def enviar_whatsapp_template_recordatorio(numero, nombre_cliente, nombre_barbero, hora, servicio):
+    if not numero:
+        return False
+
+    numero = normalizar_numero_cr(numero)
+    token = (os.getenv("WHATSAPP_TOKEN") or "").strip()
+    phone_number_id = (os.getenv("PHONE_NUMBER_ID") or "").strip()
+
+    if not token or not phone_number_id:
+        print("Faltan WHATSAPP_TOKEN o PHONE_NUMBER_ID")
+        return False
+
+    url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "messaging_product": "whatsapp",
+        "to": numero,
+        "type": "template",
+        "template": {
+            "name": "recordatorio_cita_30min_cr",
+            "language": {
+                "code": "es_CR"
+            },
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": str(nombre_cliente)},
+                        {"type": "text", "text": str(nombre_barbero)},
+                        {"type": "text", "text": str(hora)},
+                        {"type": "text", "text": str(servicio)}
+                    ]
+                }
+            ]
+        }
+    }
+
+    try:
+        print("PAYLOAD RECORDATORIO:", data)
+        r = requests.post(url, headers=headers, json=data, timeout=15)
+        print("WHATSAPP RECORDATORIO STATUS:", r.status_code)
+        print("WHATSAPP RECORDATORIO RESPUESTA:", r.text)
+        return r.status_code < 400
+    except Exception as e:
+        print("Error enviando recordatorio:", e)
+        return False
+
 def enviar_template_whatsapp(numero, template_name, variables, language_code="es_CR"):
     if not numero:
         return False
@@ -403,7 +454,9 @@ def crear_cita(cliente, cliente_id, barbero_id, servicio, precio, fecha, hora, d
         "fecha": fecha,
         "hora": hora,
         "duracion": int(duracion),
-        "estado": "activa"
+        "estado": "activa",
+        "recordatorio_30_enviado": False,
+        "fecha_recordatorio_30": None
     }
 
     return supabase_request(
@@ -709,6 +762,76 @@ def panel_atendida():
         cambiar_estado_cita(cita_id, "atendida")
         flash("Cita marcada como atendida.")
     return redirect(request.referrer or url_for("panel"))
+
+@app.route("/api/recordatorios", methods=["POST"])
+def procesar_recordatorios():
+    auth = request.headers.get("X-CRON-TOKEN")
+    if auth != os.getenv("CRON_SECRET"):
+        return jsonify({"error": "No autorizado"}), 401
+
+    try:
+        ahora = datetime.now(TZ)
+        ventana_inicio = ahora + timedelta(minutes=25)
+        ventana_fin = ahora + timedelta(minutes=35)
+
+        hoy = ahora.strftime("%Y-%m-%d")
+
+        data = supabase_request(
+            "GET",
+            "citas",
+            params={
+                "select": "id,cliente,cliente_id,hora,barbero_id,servicio,recordatorio_30_enviado,estado",
+                "fecha": f"eq.{hoy}",
+                "estado": "eq.activa",
+                "recordatorio_30_enviado": "eq.false"
+            }
+        ) or []
+
+        recordatorios_enviados = 0
+
+        for cita in data:
+            hora_str = cita.get("hora", "")
+            try:
+                hora_cita = datetime.strptime(hora_str, "%H:%M:%S").time()
+                hora_cita_dt = datetime.combine(ahora.date(), hora_cita).replace(tzinfo=TZ)
+            except Exception:
+                continue
+
+            if ventana_inicio <= hora_cita_dt <= ventana_fin:
+                cliente_telefono = cita.get("cliente_id", "")
+                if cliente_telefono:
+                    barbero = obtener_barbero_por_id(cita.get("barbero_id"))
+                    nombre_barbero = barbero["nombre"] if barbero else "tu barbero"
+                    nombre_cliente = cita.get("cliente", "")
+                    servicio = cita.get("servicio", "")
+                    hora_formateada = formatear_hora_12h(hora_str)
+
+                    enviado = enviar_whatsapp_template_recordatorio(
+                        numero=cliente_telefono,
+                        nombre_cliente=nombre_cliente,
+                        nombre_barbero=nombre_barbero,
+                        hora=hora_formateada,
+                        servicio=servicio
+                    )
+
+                    if enviado:
+                        cambiar_recordatorio = supabase_request(
+                            "PATCH",
+                            "citas",
+                            params={"id": f"eq.{cita.get('id')}"},
+                            json_body={
+                                "recordatorio_30_enviado": True,
+                                "fecha_recordatorio_30": datetime.now(TZ).isoformat()
+                            },
+                            extra_headers={"Prefer": "return=minimal"}
+                        )
+                        recordatorios_enviados += 1
+
+        return jsonify({"success": True, "recordatorios_enviados": recordatorios_enviados})
+
+    except Exception as e:
+        print("Error procesando recordatorios:", e)
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
