@@ -307,6 +307,26 @@ def index():
         hoy_iso=hoy_iso
     )
 
+
+@app.route("/webhook", methods=["GET"])
+def verify_webhook():
+    mode = request.args.get("hub.mode")
+    token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge")
+
+    verify_token = os.getenv("VERIFY_TOKEN")
+
+    if mode == "subscribe" and token == verify_token:
+        return challenge, 200
+    return "Token inválido", 403
+
+
+@app.route("/webhook", methods=["POST"])
+def recibir_webhook():
+    data = request.get_json(silent=True)
+    print("WEBHOOK RECIBIDO:", data)
+    return "EVENT_RECEIVED", 200
+
 @app.route("/guardar", methods=["POST"])
 def guardar():
     cliente = request.form.get("cliente", "").strip()
