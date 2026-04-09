@@ -23,11 +23,11 @@ servicios = {
     "Corte Niño": 4500,
 }
 
-def enviar_template_whatsapp(numero, template_name, variables, language_code="es"):
+def enviar_template_whatsapp(numero, template_name, variables, language_code="es_CR"):
     if not numero:
         return False
 
-    numero = str(numero).replace("+", "").replace(" ", "").strip()
+    numero = normalizar_numero_cr(numero)
     token = (os.getenv("WHATSAPP_TOKEN") or "").strip()
     phone_number_id = (os.getenv("PHONE_NUMBER_ID") or "").strip()
 
@@ -67,12 +67,24 @@ def enviar_template_whatsapp(numero, template_name, variables, language_code="es
     }
 
     try:
+        print("Payload enviado a WhatsApp:", data)
         r = requests.post(url, headers=headers, json=data, timeout=15)
         print("WhatsApp template status:", r.status_code, r.text)
         return r.status_code < 400
     except Exception as e:
         print("Error enviando template WhatsApp:", e)
         return False
+
+def normalizar_numero_cr(numero):
+    numero = str(numero).replace("+", "").replace(" ", "").replace("-", "").strip()
+
+    if numero.startswith("506") and len(numero) == 11:
+        return numero
+
+    if len(numero) == 8:
+        return f"506{numero}"
+
+    return numero
 
 def supabase_headers():
     return {
@@ -101,7 +113,7 @@ def enviar_whatsapp(numero, mensaje):
     if not numero:
         return False
 
-    numero = str(numero).replace("+", "").replace(" ", "").strip()
+    numero = normalizar_numero_cr(numero)
     token = (os.getenv("WHATSAPP_TOKEN") or "").strip()
     phone_number_id = (os.getenv("PHONE_NUMBER_ID") or "").strip()
 
@@ -247,7 +259,7 @@ def index():
 @app.route("/guardar", methods=["POST"])
 def guardar():
     cliente = request.form.get("cliente", "").strip()
-    telefono = request.form.get("telefono_cliente", "").strip()
+    telefono = normalizar_numero_cr(request.form.get("telefono_cliente", ""))
     servicio = request.form.get("servicio", "").strip()
     fecha = request.form.get("fecha", "").strip()
     hora_12h = request.form.get("hora", "").strip()
@@ -286,27 +298,27 @@ def guardar():
     telefono_barbero = barbero["telefono"] if barbero else None
 
     mensaje_barbero = (
-        f"📌 Nueva cita asignada\n\n"
-        f"Cliente: {cliente}\n"
-        f"WhatsApp: 506{telefono}\n"
-        f"Servicio: {servicio}\n"
-        f"Fecha: {fecha}\n"
-        f"Hora: {hora_12h}"
-    )
+    f"📌 Nueva cita asignada\n\n"
+    f"Cliente: {cliente}\n"
+    f"WhatsApp: {telefono}\n"
+    f"Servicio: {servicio}\n"
+    f"Fecha: {fecha}\n"
+    f"Hora: {hora_12h}"
+)
 
     # Cliente -> template aprobado en Meta
     enviar_template_whatsapp(
-        numero=f"506{telefono}",
-        template_name="confirmacion_cita",
-        variables=[cliente, servicio, fecha, hora_12h, nombre_barbero],
-        language_code="es_CR"
-    )
+    numero=telefono,
+    template_name="confirmacion_cita",
+    variables=[cliente, servicio, fecha, hora_12h, nombre_barbero],
+    language_code="es_CR"
+)
 
     # Barbero -> mensaje normal
     if telefono_barbero:
         enviar_whatsapp(telefono_barbero, mensaje_barbero)
 
-    print("Telefono cliente:", f"506{telefono}")
+    print("Telefono cliente:", telefono)
     print("Telefono barbero:", telefono_barbero)
     print("Nombre barbero:", nombre_barbero)
 
