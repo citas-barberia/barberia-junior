@@ -75,6 +75,58 @@ def enviar_template_whatsapp(numero, template_name, variables, language_code="es
         print("Error enviando template WhatsApp:", e)
         return False
 
+def enviar_whatsapp_template_barbero(numero, cliente, whatsapp_cliente, servicio, fecha, hora):
+    if not numero:
+        return False
+
+    numero = normalizar_numero_cr(numero)
+    token = (os.getenv("WHATSAPP_TOKEN") or "").strip()
+    phone_number_id = (os.getenv("PHONE_NUMBER_ID") or "").strip()
+
+    if not token or not phone_number_id:
+        print("Faltan WHATSAPP_TOKEN o PHONE_NUMBER_ID")
+        return False
+
+    url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "messaging_product": "whatsapp",
+        "to": numero,
+        "type": "template",
+        "template": {
+            "name": "nueva_cita_barbero",
+            "language": {
+                "code": "es_CR"
+            },
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": str(cliente)},
+                        {"type": "text", "text": str(whatsapp_cliente)},
+                        {"type": "text", "text": str(servicio)},
+                        {"type": "text", "text": str(fecha)},
+                        {"type": "text", "text": str(hora)}
+                    ]
+                }
+            ]
+        }
+    }
+
+    try:
+        print("PAYLOAD BARBERO:", data)
+        r = requests.post(url, headers=headers, json=data, timeout=15)
+        print("WHATSAPP BARBERO STATUS:", r.status_code)
+        print("WHATSAPP BARBERO RESPUESTA:", r.text)
+        return r.status_code < 400
+    except Exception as e:
+        print("Error enviando template al barbero:", e)
+        return False        
+
 def normalizar_numero_cr(numero):
     numero = str(numero).replace("+", "").replace(" ", "").replace("-", "").strip()
 
@@ -159,6 +211,71 @@ def formatear_hora_12h(hora_str):
         return datetime.strptime(str(hora_str), "%H:%M:%S").strftime("%I:%M %p")
     except:
         return str(hora_str)
+    
+def formatear_fecha_es(fecha_str):
+    try:
+        dt = datetime.strptime(fecha_str, "%Y-%m-%d")
+
+        dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+        meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                 "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+
+        return f"{dias[dt.weekday()]} {dt.day} de {meses[dt.month - 1]} del {dt.year}"
+    except Exception:
+        return fecha_str    
+    
+
+def enviar_whatsapp_template_barbero(numero, cliente, whatsapp_cliente, servicio, fecha, hora):
+    if not numero:
+        return False
+
+    numero = normalizar_numero_cr(numero)
+    token = (os.getenv("WHATSAPP_TOKEN") or "").strip()
+    phone_number_id = (os.getenv("PHONE_NUMBER_ID") or "").strip()
+
+    if not token or not phone_number_id:
+        print("Faltan WHATSAPP_TOKEN o PHONE_NUMBER_ID")
+        return False
+
+    url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "messaging_product": "whatsapp",
+        "to": numero,
+        "type": "template",
+        "template": {
+            "name": "nueva_cita_barbero",
+            "language": {
+                "code": "es_CR"
+            },
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": str(cliente)},
+                        {"type": "text", "text": str(whatsapp_cliente)},
+                        {"type": "text", "text": str(servicio)},
+                        {"type": "text", "text": str(fecha)},
+                        {"type": "text", "text": str(hora)}
+                    ]
+                }
+            ]
+        }
+    }
+
+    try:
+        print("PAYLOAD BARBERO:", data)
+        r = requests.post(url, headers=headers, json=data, timeout=15)
+        print("WHATSAPP BARBERO STATUS:", r.status_code)
+        print("WHATSAPP BARBERO RESPUESTA:", r.text)
+        return r.status_code < 400
+    except Exception as e:
+        print("Error enviando template al barbero:", e)
+        return False    
 
 def enviar_whatsapp(numero, mensaje):
     if not numero:
@@ -367,30 +484,28 @@ def guardar():
     barbero = obtener_barbero_por_id(barbero_id)
     nombre_barbero = barbero["nombre"] if barbero else "tu barbero"
     telefono_barbero = barbero["telefono"] if barbero else None
-
-    mensaje_barbero = (
-    f"📌 Nueva cita asignada\n\n"
-    f"Cliente: {cliente}\n"
-    f"WhatsApp: {telefono}\n"
-    f"Servicio: {servicio}\n"
-    f"Fecha: {fecha}\n"
-    f"Hora: {hora_12h}"
-)
+    fecha_bonita = formatear_fecha_es(fecha)
 
     # Cliente -> template aprobado en Meta
     enviar_whatsapp_template_confirmacion(
-    numero=telefono,
-    nombre_cliente=cliente,
-    nombre_barbero=nombre_barbero,
-    servicio=servicio,
-    fecha=fecha,
-    hora=hora_12h
-)
+        numero=telefono,
+        cliente=cliente,
+        servicio=servicio,
+        fecha=fecha_bonita,
+        hora=hora_12h,
+        barbero=nombre_barbero
+    )
 
-
-    # Barbero -> mensaje normal
+    # Barbero -> template aprobado en Meta
     if telefono_barbero:
-        enviar_whatsapp(telefono_barbero, mensaje_barbero)
+        enviar_whatsapp_template_barbero(
+            numero=telefono_barbero,
+            cliente=cliente,
+            whatsapp_cliente=telefono[-8:] if len(telefono) >= 8 else telefono,
+            servicio=servicio,
+            fecha=fecha_bonita,
+            hora=hora_12h
+        )
 
     print("Telefono cliente:", telefono)
     print("Telefono barbero:", telefono_barbero)
@@ -398,8 +513,6 @@ def guardar():
 
     flash("Cita creada correctamente.")
     return redirect(url_for("index"))
-
- 
 
 
 @app.route("/horas")
