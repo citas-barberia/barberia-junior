@@ -410,7 +410,13 @@ def supabase_request(method, path, params=None, json_body=None, extra_headers=No
             json=json_body,
             timeout=SUPABASE_TIMEOUT
         )
+
+        if response.status_code >= 400:
+            print("Supabase status:", response.status_code)
+            print("Supabase response:", response.text)
+
         response.raise_for_status()
+
         if response.text:
             return response.json()
         return None
