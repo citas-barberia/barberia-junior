@@ -86,6 +86,57 @@ def normalizar_numero_cr(numero):
 
     return numero
 
+def enviar_whatsapp_template_confirmacion(numero, nombre_cliente, nombre_barbero, servicio, fecha, hora):
+    if not numero:
+        return False
+
+    numero = normalizar_numero_cr(numero)
+    token = (os.getenv("WHATSAPP_TOKEN") or "").strip()
+    phone_number_id = (os.getenv("PHONE_NUMBER_ID") or "").strip()
+
+    if not token or not phone_number_id:
+        print("Faltan WHATSAPP_TOKEN o PHONE_NUMBER_ID")
+        return False
+
+    url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "messaging_product": "whatsapp",
+        "to": numero,
+        "type": "template",
+        "template": {
+            "name": "confirmacion_cita",
+            "language": {
+                "code": "es_CR"
+            },
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": str(nombre_cliente)},
+                        {"type": "text", "text": str(servicio)},
+                        {"type": "text", "text": str(fecha)},
+                        {"type": "text", "text": str(hora)},
+                        {"type": "text", "text": str(nombre_barbero)}
+                    ]
+                }
+            ]
+        }
+    }
+
+    try:
+        print("Payload confirmacion:", data)
+        r = requests.post(url, headers=headers, json=data, timeout=15)
+        print("WhatsApp confirmacion status:", r.status_code, r.text)
+        return r.status_code < 400
+    except Exception as e:
+        print("Error enviando template confirmacion:", e)
+        return False
+
 def supabase_headers():
     return {
         "apikey": SUPABASE_KEY,
@@ -307,12 +358,15 @@ def guardar():
 )
 
     # Cliente -> template aprobado en Meta
-    enviar_template_whatsapp(
+    enviar_whatsapp_template_confirmacion(
     numero=telefono,
-    template_name="confirmacion_cita",
-    variables=[cliente, servicio, fecha, hora_12h, nombre_barbero],
-    language_code="es_CR"
+    nombre_cliente=cliente,
+    nombre_barbero=nombre_barbero,
+    servicio=servicio,
+    fecha=fecha,
+    hora=hora_12h
 )
+
 
     # Barbero -> mensaje normal
     if telefono_barbero:
