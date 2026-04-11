@@ -1,5 +1,5 @@
 import token
-
+from urllib.parse import quote
 from flask import Flask, render_template, request, redirect, flash, url_for, jsonify
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -483,6 +483,27 @@ def index():
         hoy_iso=hoy_iso
     )
 
+@app.route("/reservar/<slug_barbero>")
+def reservar_barbero(slug_barbero):
+    barberos = obtener_barberos_activos()
+
+    barbero_obj = None
+    for b in barberos:
+        if b.get("slug") == slug_barbero:
+            barbero_obj = b
+            break
+
+    if not barbero_obj:
+        return "Barbero no encontrado", 404
+
+    hoy_iso = datetime.now(TZ).strftime("%Y-%m-%d")
+
+    return render_template(
+        "index.html",
+        barberos=[barbero_obj],   # solo ese barbero
+        servicios=servicios,
+        hoy_iso=hoy_iso
+    )
 
 @app.route("/webhook", methods=["GET"])
 def verify_webhook():
@@ -751,7 +772,17 @@ def panel_barbero(slug_barbero):
         "nombre_barbero": barbero_obj["nombre"]
     }
 
-    return render_template("panel_barbero.html", citas=citas, stats=stats, barbero=barbero_obj)
+    reserva_url = url_for("reservar_barbero", slug_barbero=barbero_obj["slug"], _external=True)
+    qr_url = f"https://quickchart.io/qr?text={quote(reserva_url)}&size=220"
+
+    return render_template(
+        "panel_barbero.html",
+        citas=citas,
+        stats=stats,
+        barbero=barbero_obj,
+        reserva_url=reserva_url,
+        qr_url=qr_url
+    )
 
 @app.route("/panel/cancelar", methods=["POST"])
 def panel_cancelar():
