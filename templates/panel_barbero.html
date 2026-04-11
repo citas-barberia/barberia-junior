@@ -220,44 +220,27 @@
     <button class="tab-btn active" type="button" onclick="mostrarSeccion('inicio', this)">Inicio</button>
     <button class="tab-btn" type="button" onclick="mostrarSeccion('qr', this)">QR</button>
 </div>
-    <div class="reserva-box">
-    <h2>Link de reservas para clientes</h2>
+    
 
-    <div class="reserva-grid">
-        <div>
-            <div class="reserva-url-label">Este es tu enlace fijo para compartir por WhatsApp, Instagram o redes:</div>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="flash">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 
-            <div class="reserva-url-wrap">
-                <input
-                    type="text"
-                    id="reservaUrl"
-                    class="reserva-url"
-                    value="{{ reserva_url }}"
-                    readonly
-                >
-                <button class="btn btn-ok" type="button" onclick="copiarEnlace()">Copiar link</button>
-                <a class="btn btn-ok" href="{{ reserva_url }}" target="_blank" style="text-decoration:none; display:inline-flex; align-items:center;">
-                    Abrir
-                </a>
-            </div>
-        </div>
+<div id="seccion-inicio" class="seccion activa">
+    <div class="stats">
+        ...
+    </div>
 
-        <div class="qr-box">
-            <img src="{{ qr_url }}" alt="Código QR de reservas de {{ barbero.nombre }}">
-            <div class="qr-text">Escanéalo para abrir la reserva directa</div>
-        </div>
+    <div class="table-wrap">
+        ...
     </div>
 </div>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        {% for message in messages %}
-          <div class="flash">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-    <div id="seccion-inicio" class="seccion activa"></div>
-    <div id="seccion-qr" class="seccion">
+<div id="seccion-qr" class="seccion">
     <div class="reserva-box">
         <h2>Link de reservas para clientes</h2>
 
@@ -350,12 +333,6 @@ function mostrarSeccion(nombre, boton) {
     boton.classList.add("active");
 }
 
-function copiarEnlace() {
-    const input = document.getElementById("reservaUrl");
-    navigator.clipboard.writeText(input.value)
-        .then(() => alert("Link copiado correctamente"))
-        .catch(() => alert("No se pudo copiar el link"));
-}
 
 function copiarEnlace() {
     const input = document.getElementById("reservaUrl");
