@@ -760,6 +760,7 @@ def panel_barbero(slug_barbero):
         "servicio": c.get("servicio"),
         "precio": precio,
         "fecha": c.get("fecha"),
+        
         "hora": formatear_hora_12h(c.get("hora")),
         "duracion": c.get("duracion"),
         "estado": estado,
