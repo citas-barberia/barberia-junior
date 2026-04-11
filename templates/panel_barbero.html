@@ -134,7 +134,7 @@
     display: none;
 }
 
-.seccion.activa {
+.seccion.visible {
     display: block;
 }
 
@@ -230,7 +230,7 @@
   {% endif %}
 {% endwith %}
 
-<div id="seccion-inicio" class="seccion activa">
+<div id="seccion-inicio" class="seccion visible">
     <div class="stats">
         ...
     </div>
@@ -324,10 +324,10 @@
 </div>
 <script>
 function mostrarSeccion(nombre, boton) {
-    document.getElementById("seccion-inicio").classList.remove("activa");
-    document.getElementById("seccion-qr").classList.remove("activa");
+    document.getElementById("seccion-inicio").classList.remove("visible");
+    document.getElementById("seccion-qr").classList.remove("visible");
 
-    document.getElementById("seccion-" + nombre).classList.add("activa");
+    document.getElementById("seccion-" + nombre).classList.add("visible");
 
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
     boton.classList.add("active");
