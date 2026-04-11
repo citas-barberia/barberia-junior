@@ -232,45 +232,6 @@
 
 <div id="seccion-inicio" class="seccion visible">
     <div class="stats">
-        ...
-    </div>
-
-    <div class="table-wrap">
-        ...
-    </div>
-</div>
-
-<div id="seccion-qr" class="seccion">
-    <div class="reserva-box">
-        <h2>Link de reservas para clientes</h2>
-
-        <div class="reserva-grid">
-            <div>
-                <div class="reserva-url-label">
-                    Este es tu enlace fijo para compartir por WhatsApp, Instagram o redes:
-                </div>
-
-                <div class="reserva-url-wrap">
-                    <input
-                        type="text"
-                        id="reservaUrl"
-                        class="reserva-url"
-                        value="{{ reserva_url }}"
-                        readonly
-                    >
-                    <button class="btn btn-ok" type="button" onclick="copiarEnlace()">Copiar link</button>
-                </div>
-            </div>
-
-            <div class="qr-box">
-                <img src="{{ qr_url }}" alt="Código QR de reservas de {{ barbero.nombre }}">
-                <div class="qr-text">Escanéalo para abrir la reserva directa</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-    <div class="stats">
         <div class="card"><div class="t">Total citas</div><div class="v">{{ stats.total_citas }}</div></div>
         <div class="card"><div class="t">Activas</div><div class="v">{{ stats.total_activas }}</div></div>
         <div class="card"><div class="t">Atendidas</div><div class="v">{{ stats.total_atendidas }}</div></div>
@@ -320,6 +281,36 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+</div>
+
+<div id="seccion-qr" class="seccion">
+    <div class="reserva-box">
+        <h2>Link de reservas para clientes</h2>
+
+        <div class="reserva-grid">
+            <div>
+                <div class="reserva-url-label">
+                    Este es tu enlace fijo para compartir por WhatsApp, Instagram o redes:
+                </div>
+
+                <div class="reserva-url-wrap">
+                    <input
+                        type="text"
+                        id="reservaUrl"
+                        class="reserva-url"
+                        value="{{ reserva_url }}"
+                        readonly
+                    >
+                    <button class="btn btn-ok" type="button" onclick="copiarEnlace()">Copiar link</button>
+                </div>
+            </div>
+
+            <div class="qr-box">
+                <img src="{{ qr_url }}" alt="Código QR de reservas de {{ barbero.nombre }}">
+                <div class="qr-text">Escanéalo para abrir la reserva directa</div>
+            </div>
+        </div>
     </div>
 </div>
 <script>
