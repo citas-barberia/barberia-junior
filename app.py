@@ -23,6 +23,17 @@ servicios = {
     "Corte Niño": 4500,
 }
 
+def obtener_rango_semana_actual():
+    ahora = datetime.now(TZ)
+    hoy = ahora.date()
+
+    inicio_semana = hoy - timedelta(days=hoy.weekday())  # lunes
+    fin_semana = inicio_semana + timedelta(days=6)       # domingo
+
+    return (
+        inicio_semana.strftime("%Y-%m-%d"),
+        fin_semana.strftime("%Y-%m-%d")
+    )
 def enviar_whatsapp_template_recordatorio(numero, nombre_cliente, nombre_barbero, hora, servicio):
     if not numero:
         return False
@@ -731,10 +742,15 @@ def panel_barbero(slug_barbero):
     total_canceladas = 0
     total_atendidas = 0
     total_cobrado = 0
+    inicio_semana, fin_semana = obtener_rango_semana_actual()
+    ganancia_semana = 0
 
     for c in citas_raw:
         if int(c.get("barbero_id")) != int(barbero_obj["id"]):
             continue
+        fecha_cita = str(c.get("fecha") or "")
+        if estado == "atendida" and inicio_semana <= fecha_cita <= fin_semana:
+            ganancia_semana += precio
 
         estado = (c.get("estado") or "activa").lower()
         precio = int(c.get("precio") or 0)
@@ -764,14 +780,16 @@ def panel_barbero(slug_barbero):
             total_cobrado += precio
 
     stats = {
-        "total_citas": total_citas,
-        "total_activas": total_activas,
-        "total_canceladas": total_canceladas,
-        "total_atendidas": total_atendidas,
-        "total_cobrado": total_cobrado,
-        "nombre_barbero": barbero_obj["nombre"]
-    }
-
+    "total_citas": total_citas,
+    "total_activas": total_activas,
+    "total_canceladas": total_canceladas,
+    "total_atendidas": total_atendidas,
+    "total_cobrado": total_cobrado,
+    "ganancia_semana": ganancia_semana,
+    "inicio_semana": inicio_semana,
+    "fin_semana": fin_semana,
+    "nombre_barbero": barbero_obj["nombre"]
+}
     reserva_url = url_for("reservar_barbero", slug_barbero=barbero_obj["slug"], _external=True)
     qr_url = f"https://quickchart.io/qr?text={quote(reserva_url)}&size=220"
 
