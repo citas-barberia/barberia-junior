@@ -748,36 +748,37 @@ def panel_barbero(slug_barbero):
     for c in citas_raw:
         if int(c.get("barbero_id")) != int(barbero_obj["id"]):
             continue
-        fecha_cita = str(c.get("fecha") or "")
-        if estado == "atendida" and inicio_semana <= fecha_cita <= fin_semana:
-            ganancia_semana += precio
 
-        estado = (c.get("estado") or "activa").lower()
-        precio = int(c.get("precio") or 0)
+    estado = (c.get("estado") or "activa").lower()
+    precio = int(c.get("precio") or 0)
+    fecha_cita = str(c.get("fecha") or "")
 
-        cita = {
-            "id": c.get("id"),
-            "cliente": c.get("cliente"),
-            "cliente_id": c.get("cliente_id"),
-            "servicio": c.get("servicio"),
-            "precio": precio,
-            "fecha": c.get("fecha"),
-            "hora": formatear_hora_12h(c.get("hora")),
-            "duracion": c.get("duracion"),
-            "estado": estado,
-            "barbero_id": c.get("barbero_id"),
-            "barbero_nombre": barbero_obj["nombre"]
-        }
-        citas.append(cita)
+    cita = {
+        "id": c.get("id"),
+        "cliente": c.get("cliente"),
+        "cliente_id": c.get("cliente_id"),
+        "servicio": c.get("servicio"),
+        "precio": precio,
+        "fecha": c.get("fecha"),
+        "hora": formatear_hora_12h(c.get("hora")),
+        "duracion": c.get("duracion"),
+        "estado": estado,
+        "barbero_id": c.get("barbero_id"),
+        "barbero_nombre": barbero_obj["nombre"]
+    }
+    citas.append(cita)
 
-        total_citas += 1
-        if estado == "activa":
-            total_activas += 1
-        elif estado == "cancelada":
-            total_canceladas += 1
-        elif estado == "atendida":
-            total_atendidas += 1
-            total_cobrado += precio
+    total_citas += 1
+    if estado == "activa":
+        total_activas += 1
+    elif estado == "cancelada":
+        total_canceladas += 1
+    elif estado == "atendida":
+        total_atendidas += 1
+        total_cobrado += precio
+
+    if estado == "atendida" and inicio_semana <= fecha_cita <= fin_semana:
+        ganancia_semana += precio
 
     stats = {
     "total_citas": total_citas,
