@@ -5,210 +5,190 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de {{ barbero.nombre }}</title>
     <style>
-        .reserva-box {
-    background: #242425;
-    border: 1px solid #333;
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 20px;
-}
-
-.reserva-box h2 {
-    margin-top: 0;
-    color: #D4AF37;
-    font-size: 20px;
-}
-
-.reserva-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 260px;
-    gap: 20px;
-    align-items: center;
-}
-
-.reserva-url-label {
-    color: #bbb;
-    font-size: 14px;
-    margin-bottom: 8px;
-}
-
-.reserva-url-wrap {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.reserva-url {
-    flex: 1;
-    min-width: 260px;
-    background: #111;
-    color: white;
-    border: 1px solid #444;
-    border-radius: 10px;
-    padding: 12px;
-    font-size: 14px;
-}
-
-.qr-box {
-    text-align: center;
-}
-
-.qr-box img {
-    width: 220px;
-    max-width: 100%;
-    background: white;
-    padding: 10px;
-    border-radius: 14px;
-}
-
-.qr-text {
-    color: #bbb;
-    font-size: 13px;
-    margin-top: 10px;
-}
-
-@media (max-width: 820px) {
-    .reserva-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .qr-box {
-        text-align: left;
-    }
-}
         * { box-sizing: border-box; font-family: Arial, sans-serif; }
         body { background: #0f0f10; color: white; margin: 0; padding: 20px; }
         .container { max-width: 1100px; margin: auto; background: #1b1b1c; padding: 25px; border-radius: 20px; }
         h1 { color: #D4AF37; margin-top: 0; }
+
         .links { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
         .links a {
-            text-decoration: none; background: #D4AF37; color: black;
-            padding: 10px 14px; border-radius: 10px; font-weight: bold;
+            text-decoration: none;
+            background: #D4AF37;
+            color: black;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: bold;
         }
-        .stats {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px; margin-bottom: 20px;
+
+        .tab-btn {
+            background: #D4AF37;
+            color: black;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
         }
-        .card { background: #242425; padding: 16px; border-radius: 14px; border: 1px solid #333; }
-        .card .t { color: #bbb; font-size: 13px; margin-bottom: 6px; }
-        .card .v { font-size: 24px; font-weight: bold; }
+
+        .tab-btn.active {
+            background: white;
+            color: black;
+        }
+
         .flash {
-            background: #D4AF37; color: black; padding: 12px; border-radius: 10px;
-            margin-bottom: 15px; text-align: center; font-weight: bold;
+            background: #D4AF37;
+            color: black;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
         }
+
+        .seccion { display: none; }
+        .seccion.visible { display: block; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #242425;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid #333;
+        }
+
+        .card .t {
+            color: #bbb;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .card .v {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
         .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th, td { padding: 12px; border-bottom: 1px solid #333; text-align: left; }
-        th { color: #D4AF37; background: #202021; }
-        .tag {
-            display: inline-block; padding: 6px 10px; border-radius: 8px;
-            font-size: 12px; font-weight: bold; text-transform: uppercase;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
         }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            text-align: left;
+        }
+
+        th {
+            color: #D4AF37;
+            background: #202021;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
         .activa { background: #198754; color: white; }
         .cancelada { background: #dc3545; color: white; }
         .atendida { background: #0d6efd; color: white; }
+
         .acciones { display: flex; gap: 8px; }
+
         .btn {
-            border: none; border-radius: 8px; padding: 8px 12px;
-            font-weight: bold; cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: bold;
+            cursor: pointer;
         }
+
         .btn-ok { background: #D4AF37; color: black; }
         .btn-danger { background: #dc3545; color: white; }
-        .tab-btn {
-    text-decoration: none;
-    background: #D4AF37;
-    color: black;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-}
 
-.tab-btn.active {
-    background: white;
-    color: black;
-}
+        .reserva-box {
+            background: #242425;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
 
-.seccion {
-    display: none;
-}
+        .reserva-box h2 {
+            margin-top: 0;
+            color: #D4AF37;
+            font-size: 20px;
+        }
 
-.seccion.visible {
-    display: block;
-}
+        .reserva-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 260px;
+            gap: 20px;
+            align-items: center;
+        }
 
-.reserva-box {
-    background: #242425;
-    border: 1px solid #333;
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 20px;
-}
+        .reserva-url-label {
+            color: #bbb;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
 
-.reserva-box h2 {
-    margin-top: 0;
-    color: #D4AF37;
-    font-size: 20px;
-}
+        .reserva-url-wrap {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
 
-.reserva-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 260px;
-    gap: 20px;
-    align-items: center;
-}
+        .reserva-url {
+            flex: 1;
+            min-width: 260px;
+            background: #111;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 14px;
+        }
 
-.reserva-url-label {
-    color: #bbb;
-    font-size: 14px;
-    margin-bottom: 8px;
-}
+        .qr-box {
+            text-align: center;
+        }
 
-.reserva-url-wrap {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
+        .qr-box img {
+            width: 220px;
+            max-width: 100%;
+            background: white;
+            padding: 10px;
+            border-radius: 14px;
+        }
 
-.reserva-url {
-    flex: 1;
-    min-width: 260px;
-    background: #111;
-    color: white;
-    border: 1px solid #444;
-    border-radius: 10px;
-    padding: 12px;
-    font-size: 14px;
-}
+        .qr-text {
+            color: #bbb;
+            font-size: 13px;
+            margin-top: 10px;
+        }
 
-.qr-box {
-    text-align: center;
-}
+        @media (max-width: 820px) {
+            .reserva-grid {
+                grid-template-columns: 1fr;
+            }
 
-.qr-box img {
-    width: 220px;
-    max-width: 100%;
-    background: white;
-    padding: 10px;
-    border-radius: 14px;
-}
-
-.qr-text {
-    color: #bbb;
-    font-size: 13px;
-    margin-top: 10px;
-}
-
-@media (max-width: 820px) {
-    .reserva-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .qr-box {
-        text-align: left;
-    }
-}
+            .qr-box {
+                text-align: left;
+            }
+        }
     </style>
 </head>
 <body>
@@ -216,129 +196,128 @@
     <h1>Panel de {{ barbero.nombre }}</h1>
 
     <div class="links">
-    <a href="/panel">Panel general</a>
-    <button class="tab-btn active" type="button" onclick="mostrarSeccion('inicio', this)">Inicio</button>
-    <button class="tab-btn" type="button" onclick="mostrarSeccion('qr', this)">QR</button>
-</div>
-    
-
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    {% for message in messages %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
-
-<div id="seccion-inicio" class="seccion visible">
-    <div class="stats">
-        <div class="card"><div class="t">Total citas</div><div class="v">{{ stats.total_citas }}</div></div>
-        <div class="card"><div class="t">Activas</div><div class="v">{{ stats.total_activas }}</div></div>
-        <div class="card"><div class="t">Atendidas</div><div class="v">{{ stats.total_atendidas }}</div></div>
-        <div class="card"><div class="t">Canceladas</div><div class="v">{{ stats.total_canceladas }}</div></div>
-        <div class="card"><div class="t">Total cobrado</div><div class="v">₡{{ stats.total_cobrado }}</div></div>
-        <div class="card">
-        <div class="t">Ganancia semanal</div>
-        <div class="v">₡{{ stats.ganancia_semana }}</div>
-        <div class="t">{{ stats.inicio_semana }} al {{ stats.fin_semana }}</div>
-   </div>
-<div>
-
-
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <table>
-            <div>
-         <div>         
-                
-                <tr>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Cliente</th>
-                    <th>Servicio</th>
-                    <th>Precio</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in citas %}
-                <tr>
-                    <td>{{ c.fecha }}</td>
-                    <td>{{ c.hora }}</td>
-                    <td>{{ c.cliente }}</td>
-                    <td>{{ c.servicio }}</td>
-                    <td>₡{{ c.precio }}</td>
-                    <td><span class="tag {{ c.estado }}">{{ c.estado }}</span></td>
-                    <td>
-                        {% if c.estado == "activa" %}
-                        <div class="acciones">
-                            <form action="/panel/atendida" method="POST">
-                                <input type="hidden" name="id" value="{{ c.id }}">
-                                <button class="btn btn-ok" type="submit">Atendida</button>
-                            </form>
-                            <form action="/panel/cancelar" method="POST" onsubmit="return confirm('¿Cancelar esta cita?');">
-                                <input type="hidden" name="id" value="{{ c.id }}">
-                                <button class="btn btn-danger" type="submit">Cancelar</button>
-                            </form>
-                        </div>
-                        {% else %}
-                        —
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <a href="/panel">Panel general</a>
+        <button id="btn-inicio" class="tab-btn active" type="button" onclick="mostrarSeccion('inicio', this)">Inicio</button>
+        <button id="btn-qr" class="tab-btn" type="button" onclick="mostrarSeccion('qr', this)">QR</button>
     </div>
-</div>
 
-<div id="seccion-qr" class="seccion">
-    <div class="reserva-box">
-        <h2>Link de reservas para clientes</h2>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
-        <div class="reserva-grid">
-            <div>
-                <div class="reserva-url-label">
-                    Este es tu enlace fijo para compartir por WhatsApp, Instagram o redes:
-                </div>
-
-                <div class="reserva-url-wrap">
-                    <input
-                        type="text"
-                        id="reservaUrl"
-                        class="reserva-url"
-                        value="{{ reserva_url }}"
-                        readonly
-                    >
-                    <button class="btn btn-ok" type="button" onclick="copiarEnlace()">Copiar link</button>
-                </div>
+    <div id="seccion-inicio" class="seccion visible">
+        <div class="stats">
+            <div class="card"><div class="t">Total citas</div><div class="v">{{ stats.total_citas }}</div></div>
+            <div class="card"><div class="t">Activas</div><div class="v">{{ stats.total_activas }}</div></div>
+            <div class="card"><div class="t">Atendidas</div><div class="v">{{ stats.total_atendidas }}</div></div>
+            <div class="card"><div class="t">Canceladas</div><div class="v">{{ stats.total_canceladas }}</div></div>
+            <div class="card"><div class="t">Total cobrado</div><div class="v">₡{{ stats.total_cobrado }}</div></div>
+            <div class="card">
+                <div class="t">Ganancia semanal</div>
+                <div class="v">₡{{ stats.ganancia_semana }}</div>
+                <div class="t">{{ stats.inicio_semana }} al {{ stats.fin_semana }}</div>
             </div>
+        </div>
 
-            <div class="qr-box">
-                <img src="{{ qr_url }}" alt="Código QR de reservas de {{ barbero.nombre }}">
-                <div class="qr-text">Escanéalo para abrir la reserva directa</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in citas %}
+                    <tr>
+                        <td>{{ c.fecha }}</td>
+                        <td>{{ c.hora }}</td>
+                        <td>{{ c.cliente }}</td>
+                        <td>{{ c.servicio }}</td>
+                        <td>₡{{ c.precio }}</td>
+                        <td><span class="tag {{ c.estado }}">{{ c.estado }}</span></td>
+                        <td>
+                            {% if c.estado == "activa" %}
+                            <div class="acciones">
+                                <form action="/panel/atendida" method="POST">
+                                    <input type="hidden" name="id" value="{{ c.id }}">
+                                    <button class="btn btn-ok" type="submit">Atendida</button>
+                                </form>
+                                <form action="/panel/cancelar" method="POST" onsubmit="return confirm('¿Cancelar esta cita?');">
+                                    <input type="hidden" name="id" value="{{ c.id }}">
+                                    <button class="btn btn-danger" type="submit">Cancelar</button>
+                                </form>
+                            </div>
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="seccion-qr" class="seccion">
+        <div class="reserva-box">
+            <h2>Link de reservas para clientes</h2>
+
+            <div class="reserva-grid">
+                <div>
+                    <div class="reserva-url-label">
+                        Este es tu enlace fijo para compartir por WhatsApp, Instagram o redes:
+                    </div>
+
+                    <div class="reserva-url-wrap">
+                        <input
+                            type="text"
+                            id="reservaUrl"
+                            class="reserva-url"
+                            value="{{ reserva_url }}"
+                            readonly
+                        >
+                        <button class="btn btn-ok" type="button" onclick="copiarEnlace()">Copiar link</button>
+                    </div>
+                </div>
+
+                <div class="qr-box">
+                    <img src="{{ qr_url }}" alt="Código QR de reservas de {{ barbero.nombre }}">
+                    <div class="qr-text">Escanéalo para abrir la reserva directa</div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
 <script>
 function mostrarSeccion(nombre, boton) {
-    document.getElementById("seccion-inicio").classList.remove("visible");
-    document.getElementById("seccion-qr").classList.remove("visible");
+    const inicio = document.getElementById("seccion-inicio");
+    const qr = document.getElementById("seccion-qr");
 
-    document.getElementById("seccion-" + nombre).classList.add("visible");
+    inicio.classList.remove("visible");
+    qr.classList.remove("visible");
+
+    const destino = document.getElementById("seccion-" + nombre);
+    if (destino) {
+        destino.classList.add("visible");
+    }
 
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
     boton.classList.add("active");
 }
 
-
 function copiarEnlace() {
     const input = document.getElementById("reservaUrl");
-    input.select();
-    input.setSelectionRange(0, 99999);
     navigator.clipboard.writeText(input.value)
         .then(() => alert("Link copiado correctamente"))
         .catch(() => alert("No se pudo copiar el link"));
