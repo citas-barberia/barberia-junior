@@ -796,11 +796,28 @@ def panel_barbero(slug_barbero):
     dias_semana = []
     inicio_dt = datetime.strptime(inicio_semana, "%Y-%m-%d").date()
 
+    dias_semana = []
+    inicio_dt = datetime.strptime(inicio_semana, "%Y-%m-%d").date()
+
+    nombres_dias = [
+        "Lunes", "Martes", "Miércoles", "Jueves",
+        "Viernes", "Sábado", "Domingo"
+    ]
+
+    nombres_meses = [
+        "enero", "febrero", "marzo", "abril", "mayo", "junio",
+        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+    ]
+
     for i in range(7):
         dia = inicio_dt + timedelta(days=i)
         dia_str = dia.strftime("%Y-%m-%d")
+
+        fecha_bonita = f"{nombres_dias[dia.weekday()]} {dia.day} de {nombres_meses[dia.month - 1]}"
+
         dias_semana.append({
             "fecha": dia_str,
+            "fecha_bonita": fecha_bonita,
             "ganancia": ganancias_por_dia.get(dia_str, 0)
         })
 
