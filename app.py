@@ -215,7 +215,7 @@ def formatear_fecha_corta_es(fecha_str):
     except:
         return str(fecha_str)
 
-def enviar_whatsapp_template_confirmacion(numero, nombre_cliente, nombre_barbero, servicio, fecha, hora, token_cancelacion):
+def enviar_whatsapp_template_confirmacion(numero, nombre_cliente, nombre_barbero, servicio, fecha, hora):
     if not numero:
         return False
 
@@ -238,7 +238,7 @@ def enviar_whatsapp_template_confirmacion(numero, nombre_cliente, nombre_barbero
         "to": numero,
         "type": "template",
         "template": {
-            "name": "confirmacion_cita_cancelable",
+            "name": "confirmacion_cita",
             "language": {
                 "code": "es_CR"
             },
@@ -252,26 +252,18 @@ def enviar_whatsapp_template_confirmacion(numero, nombre_cliente, nombre_barbero
                         {"type": "text", "text": str(hora)},
                         {"type": "text", "text": str(nombre_barbero)}
                     ]
-                },
-                {
-                    "type": "button",
-                    "sub_type": "url",
-                    "index": "0",
-                    "parameters": [
-                        {"type": "text", "text": str(token_cancelacion)}
-                    ]
                 }
             ]
         }
     }
 
     try:
-        print("Payload confirmacion cancelable:", data)
+        print("Payload confirmacion:", data)
         r = requests.post(url, headers=headers, json=data, timeout=15)
-        print("WhatsApp confirmacion cancelable status:", r.status_code, r.text)
+        print("WhatsApp confirmacion status:", r.status_code, r.text)
         return r.status_code < 400
     except Exception as e:
-        print("Error enviando template confirmacion cancelable:", e)
+        print("Error enviando template confirmacion:", e)
         return False
     
 def supabase_headers():
@@ -628,7 +620,6 @@ def guardar():
         servicio=servicio,
         fecha=fecha_bonita,
         hora=hora_12h,
-        token_cancelacion=token_cancelacion
     )
 
     # Barbero -> template aprobado en Meta
