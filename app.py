@@ -619,6 +619,8 @@ def guardar():
 )
 
     token_cancelacion = cita[0].get("token_cancelacion")
+    print("CITA DEVUELTA:", cita)
+    print("TOKEN CANCELACION:", cita[0].get("token_cancelacion"))
     if token_cancelacion:
         cancelar_url = url_for("ver_cancelacion", token=token_cancelacion, _external=True)
 
