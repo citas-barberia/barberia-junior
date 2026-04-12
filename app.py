@@ -202,6 +202,18 @@ def normalizar_numero_cr(numero):
 
     return numero
 
+def formatear_fecha_corta_es(fecha_str):
+    try:
+        dt = datetime.strptime(str(fecha_str), "%Y-%m-%d")
+
+        dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+        meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio",
+                 "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+
+        return f"{dias[dt.weekday()]} {dt.day} de {meses[dt.month - 1]}"
+    except:
+        return str(fecha_str)
+
 def enviar_whatsapp_template_confirmacion(numero, nombre_cliente, nombre_barbero, servicio, fecha, hora):
     if not numero:
         return False
@@ -755,7 +767,9 @@ def panel_barbero(slug_barbero):
     if not barbero_obj:
         return "Barbero no encontrado", 404
 
-    citas = []
+    citas_hoy = []
+    citas_manana = []
+
     total_citas = 0
     total_activas = 0
     total_canceladas = 0
@@ -764,6 +778,7 @@ def panel_barbero(slug_barbero):
 
     inicio_semana, fin_semana = obtener_rango_semana_actual()
     hoy_iso = obtener_hoy_iso()
+    manana_iso = (datetime.now(TZ).date() + timedelta(days=1)).strftime("%Y-%m-%d")
 
     ganancia_semana = 0
     ganancia_hoy = 0
@@ -786,13 +801,19 @@ def panel_barbero(slug_barbero):
             "servicio": c.get("servicio"),
             "precio": precio,
             "fecha": c.get("fecha"),
+            "fecha_bonita": formatear_fecha_corta_es(c.get("fecha")),
             "hora": formatear_hora_12h(c.get("hora")),
             "duracion": c.get("duracion"),
             "estado": estado,
             "barbero_id": c.get("barbero_id"),
             "barbero_nombre": barbero_obj["nombre"]
         }
-        citas.append(cita)
+
+        if fecha_cita == hoy_iso:
+            citas_hoy.append(cita)
+
+        if fecha_cita == manana_iso:
+            citas_manana.append(cita)
 
         total_citas += 1
 
@@ -819,10 +840,6 @@ def panel_barbero(slug_barbero):
             except:
                 pass
 
-    # asegurar que salgan todos los días de la semana aunque estén en 0
-    dias_semana = []
-    inicio_dt = datetime.strptime(inicio_semana, "%Y-%m-%d").date()
-
     dias_semana = []
     inicio_dt = datetime.strptime(inicio_semana, "%Y-%m-%d").date()
 
@@ -846,9 +863,9 @@ def panel_barbero(slug_barbero):
             "fecha": dia_str,
             "fecha_bonita": fecha_bonita,
             "ganancia": ganancias_por_dia.get(dia_str, 0)
-            
         })
-        meses_anio = [
+
+    meses_anio = [
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     ]
@@ -880,7 +897,8 @@ def panel_barbero(slug_barbero):
 
     return render_template(
         "panel_barbero.html",
-        citas=citas,
+        citas=citas_hoy,
+        citas_manana=citas_manana,
         stats=stats,
         barbero=barbero_obj,
         reserva_url=reserva_url,

@@ -197,6 +197,7 @@
 
     <div class="links">
         <button id="btn-inicio" class="tab-btn active" type="button" onclick="mostrarSeccion('inicio', this)">Inicio</button>
+        <button id="btn-manana" class="tab-btn" type="button" onclick="mostrarSeccion('manana', this)">Mañana</button>
         <button id="btn-semanal" class="tab-btn" type="button" onclick="mostrarSeccion('semanal', this)">Semanal</button>
         <button id="btn-mensual" class="tab-btn" type="button" onclick="mostrarSeccion('mensual', this)">Mensual</button>
         <button id="btn-qr" class="tab-btn" type="button" onclick="mostrarSeccion('qr', this)">QR</button>
@@ -268,6 +269,53 @@
             </table>
         </div>
     </div>
+
+<div id="seccion-manana" class="seccion">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Cliente</th>
+                    <th>Servicio</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in citas_manana %}
+                <tr>
+                    <td>{{ c.fecha_bonita }}</td>
+                    <td>{{ c.hora }}</td>
+                    <td>{{ c.cliente }}</td>
+                    <td>{{ c.servicio }}</td>
+                    <td>₡{{ c.precio }}</td>
+                    <td><span class="tag {{ c.estado }}">{{ c.estado }}</span></td>
+                    <td>
+                        {% if c.estado == "activa" %}
+                        <div class="acciones">
+                            <form action="/panel/atendida" method="POST">
+                                <input type="hidden" name="id" value="{{ c.id }}">
+                                <button class="btn btn-ok" type="submit">Atendida</button>
+                            </form>
+                            <form action="/panel/cancelar" method="POST" onsubmit="return confirm('¿Cancelar esta cita?');">
+                                <input type="hidden" name="id" value="{{ c.id }}">
+                                <button class="btn btn-danger" type="submit">Cancelar</button>
+                            </form>
+                        </div>
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <div id="seccion-semanal" class="seccion">
     <div class="stats">
         <div class="card">
