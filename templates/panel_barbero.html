@@ -199,6 +199,7 @@
         <a href="/panel">Panel general</a>
         <button id="btn-inicio" class="tab-btn active" type="button" onclick="mostrarSeccion('inicio', this)">Inicio</button>
         <button id="btn-semanal" class="tab-btn" type="button" onclick="mostrarSeccion('semanal', this)">Semanal</button>
+        <button id="btn-mensual" class="tab-btn" type="button" onclick="mostrarSeccion('mensual', this)">Mensual</button>
         <button id="btn-qr" class="tab-btn" type="button" onclick="mostrarSeccion('qr', this)">QR</button>
     </div>
 
@@ -296,6 +297,36 @@
         </table>
     </div>
 </div>
+
+<div id="seccion-mensual" class="seccion">
+    <div class="stats">
+        <div class="card">
+            <div class="t">Ganancias por mes</div>
+            <div class="v">{{ stats.nombre_barbero }}</div>
+            <div class="t">Año actual</div>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mes</th>
+                    <th>Ganancia</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in meses_data %}
+                <tr>
+                    <td>{{ item.mes }}</td>
+                    <td>₡{{ item.ganancia }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
     <div id="seccion-qr" class="seccion">
         <div class="reserva-box">
             <h2>Link de reservas para clientes</h2>
