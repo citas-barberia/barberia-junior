@@ -1,4 +1,5 @@
 import token
+import uuid
 from urllib.parse import quote
 from flask import Flask, render_template, request, redirect, flash, url_for, jsonify
 from datetime import datetime, timedelta
@@ -488,6 +489,8 @@ def obtener_citas_por_fecha_y_barbero(fecha, barbero_id):
     return data or []
 
 def crear_cita(cliente, cliente_id, barbero_id, servicio, precio, fecha, hora, duracion):
+    token_cancelacion = str(uuid.uuid4())
+
     body = {
         "cliente": cliente,
         "cliente_id": cliente_id,
@@ -499,7 +502,8 @@ def crear_cita(cliente, cliente_id, barbero_id, servicio, precio, fecha, hora, d
         "duracion": int(duracion),
         "estado": "activa",
         "recordatorio_30_enviado": False,
-        "fecha_recordatorio_30": None
+        "fecha_recordatorio_30": None,
+        "token_cancelacion": token_cancelacion
     }
 
     return supabase_request(
@@ -613,6 +617,17 @@ def guardar():
     fecha=fecha_bonita,
     hora=hora_12h
 )
+
+    token_cancelacion = cita[0].get("token_cancelacion")
+    if token_cancelacion:
+        cancelar_url = url_for("ver_cancelacion", token=token_cancelacion, _external=True)
+
+        mensaje_cancelacion = (
+            "Si deseas cancelar tu cita, presiona aquí:\n"
+            f"{cancelar_url}"
+        )
+
+        enviar_whatsapp(telefono, mensaje_cancelacion)
 
     # Barbero -> template aprobado en Meta
     if telefono_barbero:
