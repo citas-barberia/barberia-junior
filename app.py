@@ -215,7 +215,7 @@ def formatear_fecha_corta_es(fecha_str):
     except:
         return str(fecha_str)
 
-def enviar_whatsapp_template_confirmacion(numero, nombre_cliente, nombre_barbero, servicio, fecha, hora):
+def enviar_whatsapp_template_confirmacion(numero, nombre_cliente, nombre_barbero, servicio, fecha, hora, token_cancelacion):
     if not numero:
         return False
 
@@ -238,7 +238,7 @@ def enviar_whatsapp_template_confirmacion(numero, nombre_cliente, nombre_barbero
         "to": numero,
         "type": "template",
         "template": {
-            "name": "confirmacion_cita",
+            "name": "confirmacion_cita_cancelable",
             "language": {
                 "code": "es_CR"
             },
@@ -252,20 +252,28 @@ def enviar_whatsapp_template_confirmacion(numero, nombre_cliente, nombre_barbero
                         {"type": "text", "text": str(hora)},
                         {"type": "text", "text": str(nombre_barbero)}
                     ]
+                },
+                {
+                    "type": "button",
+                    "sub_type": "url",
+                    "index": "0",
+                    "parameters": [
+                        {"type": "text", "text": str(token_cancelacion)}
+                    ]
                 }
             ]
         }
     }
 
     try:
-        print("Payload confirmacion:", data)
+        print("Payload confirmacion cancelable:", data)
         r = requests.post(url, headers=headers, json=data, timeout=15)
-        print("WhatsApp confirmacion status:", r.status_code, r.text)
+        print("WhatsApp confirmacion cancelable status:", r.status_code, r.text)
         return r.status_code < 400
     except Exception as e:
-        print("Error enviando template confirmacion:", e)
+        print("Error enviando template confirmacion cancelable:", e)
         return False
-
+    
 def supabase_headers():
     return {
         "apikey": SUPABASE_KEY,
@@ -609,27 +617,19 @@ def guardar():
 
     # Cliente -> template aprobado en Meta
     
-    enviar_whatsapp_template_confirmacion(
-    numero=telefono,
-    nombre_cliente=cliente,
-    nombre_barbero=nombre_barbero,
-    servicio=servicio,
-    fecha=fecha_bonita,
-    hora=hora_12h
-)
-
     token_cancelacion = cita[0].get("token_cancelacion")
     print("CITA DEVUELTA:", cita)
-    print("TOKEN CANCELACION:", cita[0].get("token_cancelacion"))
-    if token_cancelacion:
-        cancelar_url = url_for("ver_cancelacion", token=token_cancelacion, _external=True)
+    print("TOKEN CANCELACION:", token_cancelacion)
 
-        mensaje_cancelacion = (
-            "Si deseas cancelar tu cita, presiona aquí:\n"
-            f"{cancelar_url}"
-        )
-
-        enviar_whatsapp(telefono, mensaje_cancelacion)
+    enviar_whatsapp_template_confirmacion(
+        numero=telefono,
+        nombre_cliente=cliente,
+        nombre_barbero=nombre_barbero,
+        servicio=servicio,
+        fecha=fecha_bonita,
+        hora=hora_12h,
+        token_cancelacion=token_cancelacion
+    )
 
     # Barbero -> template aprobado en Meta
     if telefono_barbero:
