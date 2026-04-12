@@ -270,6 +270,18 @@ def cambiar_estado_cita(cita_id, nuevo_estado):
         extra_headers={"Prefer": "return=minimal"}
     )
 
+def formatear_fecha_corta_es(fecha_str):
+    try:
+        dt = datetime.strptime(str(fecha_str), "%Y-%m-%d")
+
+        dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+        meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio",
+                 "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+
+        return f"{dias[dt.weekday()]} {dt.day} de {meses[dt.month - 1]}"
+    except:
+        return str(fecha_str)
+
 def formatear_hora_12h(hora_str):
     try:
         return datetime.strptime(str(hora_str), "%H:%M:%S").strftime("%I:%M %p")
@@ -689,6 +701,9 @@ def panel():
         nombre_barbero = obtener_nombre_barbero_desde_relacion(c)
         estado = (c.get("estado") or "activa").lower()
         precio = int(c.get("precio") or 0)
+        fecha_cita = str(c.get("fecha") or "")
+        hoy_iso = obtener_hoy_iso()
+        
 
         cita = {
             "id": c.get("id"),
@@ -697,13 +712,15 @@ def panel():
             "servicio": c.get("servicio"),
             "precio": precio,
             "fecha": c.get("fecha"),
+            "fecha_bonita": formatear_fecha_corta_es(c.get("fecha")),
             "hora": formatear_hora_12h(c.get("hora")),
             "duracion": c.get("duracion"),
             "estado": estado,
             "barbero_id": c.get("barbero_id"),
             "barbero_nombre": nombre_barbero
         }
-        citas.append(cita)
+        if fecha_cita == hoy_iso:
+           citas.append(cita)
 
         total_citas += 1
         if estado == "activa":
