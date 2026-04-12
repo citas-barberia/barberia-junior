@@ -753,6 +753,49 @@ def panel():
 
     return render_template("panel.html", citas=citas, barberos=barberos, stats=stats)
 
+@app.route("/cancelar/<token>")
+def ver_cancelacion(token):
+    data = supabase_request(
+        "GET",
+        "citas",
+        params={
+            "select": "id,cliente,servicio,fecha,hora,estado,token_cancelacion",
+            "token_cancelacion": f"eq.{token}",
+            "limit": "1"
+        }
+    )
+
+    if not data:
+        return "Link inválido o cita no encontrada", 404
+
+    cita = data[0]
+
+    return render_template("cancelar_cita.html", cita=cita)
+
+@app.route("/cancelar/<token>/confirmar", methods=["POST"])
+def confirmar_cancelacion(token):
+    data = supabase_request(
+        "GET",
+        "citas",
+        params={
+            "select": "id,estado,token_cancelacion",
+            "token_cancelacion": f"eq.{token}",
+            "limit": "1"
+        }
+    )
+
+    if not data:
+        return "Link inválido o cita no encontrada", 404
+
+    cita = data[0]
+
+    if cita.get("estado") == "cancelada":
+        return "Esta cita ya fue cancelada"
+
+    cambiar_estado_cita(cita["id"], "cancelada")
+
+    return render_template("cancelacion_exitosa.html")
+
 @app.route("/panel/<slug_barbero>")
 def panel_barbero(slug_barbero):
     citas_raw = obtener_citas_con_barbero()

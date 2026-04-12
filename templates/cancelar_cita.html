@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cancelar cita</title>
+</head>
+<body>
+    <h1>Cancelar cita</h1>
+
+    <p><strong>Cliente:</strong> {{ cita.cliente }}</p>
+    <p><strong>Servicio:</strong> {{ cita.servicio }}</p>
+    <p><strong>Fecha:</strong> {{ cita.fecha }}</p>
+    <p><strong>Hora:</strong> {{ cita.hora }}</p>
+    <p><strong>Estado:</strong> {{ cita.estado }}</p>
+
+    {% if cita.estado != "cancelada" %}
+    <form method="POST" action="/cancelar/{{ cita.token_cancelacion }}/confirmar">
+        <button type="submit">Cancelar cita</button>
+    </form>
+    {% else %}
+    <p>Esta cita ya fue cancelada.</p>
+    {% endif %}
+</body>
+</html>
