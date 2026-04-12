@@ -218,7 +218,6 @@
             <div class="card"><div class="t">Canceladas</div><div class="v">{{ stats.total_canceladas }}</div></div>
             <div class="card"><div class="t">Total cobrado</div><div class="v">₡{{ stats.total_cobrado }}</div></div>
             <div class="card">
-                <div class="card">
                 <div class="t">Hoy</div>
                 <div class="v">₡{{ stats.ganancia_hoy }}</div>
                 <div class="t">Ganancias del día actual</div>
@@ -330,11 +329,8 @@
 
 <script>
 function mostrarSeccion(nombre, boton) {
-    const inicio = document.getElementById("seccion-inicio");
-    const qr = document.getElementById("seccion-qr");
-
-    inicio.classList.remove("visible");
-    qr.classList.remove("visible");
+    const secciones = document.querySelectorAll(".seccion");
+    secciones.forEach(sec => sec.classList.remove("visible"));
 
     const destino = document.getElementById("seccion-" + nombre);
     if (destino) {
