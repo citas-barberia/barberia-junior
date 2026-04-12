@@ -34,6 +34,8 @@ def obtener_rango_semana_actual():
         inicio_semana.strftime("%Y-%m-%d"),
         fin_semana.strftime("%Y-%m-%d")
     )
+def obtener_hoy_iso():
+    return datetime.now(TZ).strftime("%Y-%m-%d")
 def enviar_whatsapp_template_recordatorio(numero, nombre_cliente, nombre_barbero, hora, servicio):
     if not numero:
         return False
@@ -742,56 +744,79 @@ def panel_barbero(slug_barbero):
     total_canceladas = 0
     total_atendidas = 0
     total_cobrado = 0
+
     inicio_semana, fin_semana = obtener_rango_semana_actual()
+    hoy_iso = obtener_hoy_iso()
+
     ganancia_semana = 0
+    ganancia_hoy = 0
+    ganancias_por_dia = {}
 
     for c in citas_raw:
         if int(c.get("barbero_id")) != int(barbero_obj["id"]):
             continue
 
-    estado = (c.get("estado") or "activa").lower()
-    precio = int(c.get("precio") or 0)
-    fecha_cita = str(c.get("fecha") or "")
+        estado = (c.get("estado") or "activa").lower()
+        precio = int(c.get("precio") or 0)
+        fecha_cita = str(c.get("fecha") or "")
 
-    cita = {
-        "id": c.get("id"),
-        "cliente": c.get("cliente"),
-        "cliente_id": c.get("cliente_id"),
-        "servicio": c.get("servicio"),
-        "precio": precio,
-        "fecha": c.get("fecha"),
-        
-        "hora": formatear_hora_12h(c.get("hora")),
-        "duracion": c.get("duracion"),
-        "estado": estado,
-        "barbero_id": c.get("barbero_id"),
-        "barbero_nombre": barbero_obj["nombre"]
-    }
-    citas.append(cita)
+        cita = {
+            "id": c.get("id"),
+            "cliente": c.get("cliente"),
+            "cliente_id": c.get("cliente_id"),
+            "servicio": c.get("servicio"),
+            "precio": precio,
+            "fecha": c.get("fecha"),
+            "hora": formatear_hora_12h(c.get("hora")),
+            "duracion": c.get("duracion"),
+            "estado": estado,
+            "barbero_id": c.get("barbero_id"),
+            "barbero_nombre": barbero_obj["nombre"]
+        }
+        citas.append(cita)
 
-    total_citas += 1
-    if estado == "activa":
-        total_activas += 1
-    elif estado == "cancelada":
-        total_canceladas += 1
-    elif estado == "atendida":
-        total_atendidas += 1
-        total_cobrado += precio
+        total_citas += 1
 
-    if estado == "atendida" and inicio_semana <= fecha_cita <= fin_semana:
-        ganancia_semana += precio
+        if estado == "activa":
+            total_activas += 1
+        elif estado == "cancelada":
+            total_canceladas += 1
+        elif estado == "atendida":
+            total_atendidas += 1
+            total_cobrado += precio
+
+            if fecha_cita == hoy_iso:
+                ganancia_hoy += precio
+
+            if inicio_semana <= fecha_cita <= fin_semana:
+                ganancia_semana += precio
+                ganancias_por_dia[fecha_cita] = ganancias_por_dia.get(fecha_cita, 0) + precio
+
+    # asegurar que salgan todos los días de la semana aunque estén en 0
+    dias_semana = []
+    inicio_dt = datetime.strptime(inicio_semana, "%Y-%m-%d").date()
+
+    for i in range(7):
+        dia = inicio_dt + timedelta(days=i)
+        dia_str = dia.strftime("%Y-%m-%d")
+        dias_semana.append({
+            "fecha": dia_str,
+            "ganancia": ganancias_por_dia.get(dia_str, 0)
+        })
 
     stats = {
-    "total_citas": total_citas,
-    "total_activas": total_activas,
-    "total_canceladas": total_canceladas,
-    "total_atendidas": total_atendidas,
-    "total_cobrado": total_cobrado,
-    "ganancia_semana": ganancia_semana,
-    "inicio_semana": inicio_semana,
-    "fin_semana": fin_semana,
-    "nombre_barbero": barbero_obj["nombre"]
-}
+        "total_citas": total_citas,
+        "total_activas": total_activas,
+        "total_canceladas": total_canceladas,
+        "total_atendidas": total_atendidas,
+        "total_cobrado": total_cobrado,
+        "ganancia_hoy": ganancia_hoy,
+        "ganancia_semana": ganancia_semana,
+        "inicio_semana": inicio_semana,
+        "fin_semana": fin_semana,
+        "nombre_barbero": barbero_obj["nombre"]
+    }
+
     reserva_url = url_for("reservar_barbero", slug_barbero=barbero_obj["slug"], _external=True)
     qr_url = f"https://quickchart.io/qr?text={quote(reserva_url)}&size=220"
 
@@ -801,7 +826,8 @@ def panel_barbero(slug_barbero):
         stats=stats,
         barbero=barbero_obj,
         reserva_url=reserva_url,
-        qr_url=qr_url
+        qr_url=qr_url,
+        dias_semana=dias_semana
     )
 
 @app.route("/panel/cancelar", methods=["POST"])
