@@ -607,11 +607,12 @@ def guardar():
     telefono_barbero = barbero["telefono"] if barbero else None
     fecha_bonita = formatear_fecha_es(fecha)
 
-    # Cliente -> template aprobado en Meta
-    
     token_cancelacion = cita[0].get("token_cancelacion")
+    cancelar_url = url_for("ver_cancelacion", token=token_cancelacion, _external=True)
+
     print("CITA DEVUELTA:", cita)
     print("TOKEN CANCELACION:", token_cancelacion)
+    print("LINK CANCELACION:", cancelar_url)
 
     enviar_whatsapp_template_confirmacion(
         numero=telefono,
@@ -622,7 +623,11 @@ def guardar():
         hora=hora_12h,
     )
 
-    # Barbero -> template aprobado en Meta
+    enviar_whatsapp(
+        telefono,
+        f"Si necesitas cancelar tu cita, usa este enlace: {cancelar_url}"
+    )
+
     if telefono_barbero:
         enviar_whatsapp_template_barbero(
             numero=telefono_barbero,
@@ -777,6 +782,8 @@ def ver_cancelacion(token):
         return "Link inválido o cita no encontrada", 404
 
     cita = data[0]
+    cita["fecha_bonita"] = formatear_fecha_es(cita.get("fecha", ""))
+    cita["hora_bonita"] = formatear_hora_12h(cita.get("hora", ""))
 
     return render_template("cancelar_cita.html", cita=cita)
 
