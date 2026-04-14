@@ -506,6 +506,8 @@ def crear_cita(cliente, cliente_id, barbero_id, servicio, precio, fecha, hora, d
         "token_cancelacion": token_cancelacion
     }
 
+    print("BODY A SUPABASE:", body)
+
     return supabase_request(
         "POST",
         "citas",
@@ -598,7 +600,10 @@ def guardar():
         duracion=duracion
     )
 
-    if not cita:
+    print("CITA DEVUELTA:", cita)
+
+    if not cita or not isinstance(cita, list) or len(cita) == 0:
+        print("ERROR: crear_cita no devolvió datos.")
         flash("No se pudo guardar la cita.")
         return redirect(url_for("index"))
 
@@ -608,13 +613,17 @@ def guardar():
     fecha_bonita = formatear_fecha_es(fecha)
 
     token_cancelacion = cita[0].get("token_cancelacion")
-    cancelar_url = url_for("ver_cancelacion", token=token_cancelacion, _external=True)
-
-    print("CITA DEVUELTA:", cita)
     print("TOKEN CANCELACION:", token_cancelacion)
+
+    if not token_cancelacion:
+        print("ERROR: la cita se guardó pero no regresó token_cancelacion")
+        flash("La cita se creó, pero faltó el token de cancelación.")
+        return redirect(url_for("index"))
+
+    cancelar_url = url_for("ver_cancelacion", token=token_cancelacion, _external=True)
     print("LINK CANCELACION:", cancelar_url)
 
-    enviar_whatsapp_template_confirmacion(
+    ok_confirmacion = enviar_whatsapp_template_confirmacion(
         numero=telefono,
         nombre_cliente=cliente,
         nombre_barbero=nombre_barbero,
@@ -623,13 +632,16 @@ def guardar():
         hora=hora_12h,
     )
 
-    enviar_whatsapp(
+    ok_cancelar = enviar_whatsapp(
         telefono,
         f"Si necesitas cancelar tu cita, usa este enlace: {cancelar_url}"
     )
 
+    print("ENVIO CONFIRMACION:", ok_confirmacion)
+    print("ENVIO LINK CANCELAR:", ok_cancelar)
+
     if telefono_barbero:
-        enviar_whatsapp_template_barbero(
+        ok_barbero = enviar_whatsapp_template_barbero(
             numero=telefono_barbero,
             cliente=cliente,
             whatsapp_cliente=telefono[-8:] if len(telefono) >= 8 else telefono,
@@ -637,6 +649,7 @@ def guardar():
             fecha=fecha_bonita,
             hora=hora_12h
         )
+        print("ENVIO BARBERO:", ok_barbero)
 
     print("Telefono cliente:", telefono)
     print("Telefono barbero:", telefono_barbero)
@@ -644,7 +657,6 @@ def guardar():
 
     flash("Cita creada correctamente.")
     return redirect(url_for("index"))
-
 
 
 @app.route("/horas")
