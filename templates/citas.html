@@ -1,7 +1,25 @@
-<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cancelar cita</title>
+</head>
+<body>
+    <h1>Cancelar cita</h1>
 
+    <p><strong>Cliente:</strong> {{ cita.cliente }}</p>
+    <p><strong>Servicio:</strong> {{ cita.servicio }}</p>
+    <p><strong>Fecha:</strong> {{ cita.fecha_bonita }}</p>
+    <p><strong>Hora:</strong> {{ cita.hora_bonita }}</p>
+    <p><strong>Estado:</strong> {{ cita.estado }}</p>
 
-=======
-
-
->>>>>>> fc95a033753445eab450cfaba2e193b67f69b9d5
+    {% if cita.estado != "cancelada" %}
+    <form method="POST" action="{{ url_for('confirmar_cancelacion', token=cita.token_cancelacion) }}"
+          onsubmit="return confirm('¿Seguro que deseas cancelar esta cita?');">
+        <button type="submit">Cancelar cita</button>
+    </form>
+    {% else %}
+    <p>Esta cita ya fue cancelada.</p>
+    {% endif %}
+</body>
+</html>

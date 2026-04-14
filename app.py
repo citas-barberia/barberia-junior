@@ -793,7 +793,7 @@ def confirmar_cancelacion(token):
         "GET",
         "citas",
         params={
-            "select": "id,estado,token_cancelacion",
+            "select": "id,cliente,cliente_id,servicio,fecha,hora,estado,token_cancelacion,barbero_id",
             "token_cancelacion": f"eq.{token}",
             "limit": "1"
         }
@@ -803,13 +803,48 @@ def confirmar_cancelacion(token):
         return "Link inválido o cita no encontrada", 404
 
     cita = data[0]
+    estado = (cita.get("estado") or "").lower()
 
-    if cita.get("estado") == "cancelada":
-        return "Esta cita ya fue cancelada"
+    if estado == "cancelada":
+        return render_template("cancelacion_exitosa.html", mensaje="Esta cita ya fue cancelada.")
 
-    cambiar_estado_cita(cita["id"], "cancelada")
+    try:
+        fecha_str = cita.get("fecha")
+        hora_str = cita.get("hora")
+        cita_dt = datetime.strptime(f"{fecha_str} {hora_str}", "%Y-%m-%d %H:%M:%S").replace(tzinfo=TZ)
+        ahora = datetime.now(TZ)
 
-    return render_template("cancelacion_exitosa.html")
+        if cita_dt <= ahora:
+            return render_template(
+                "cancelacion_exitosa.html",
+                mensaje="No se puede cancelar una cita que ya pasó."
+            )
+    except Exception:
+        pass
+
+    actualizado = cambiar_estado_cita(cita["id"], "cancelada")
+
+    if actualizado is None:
+        return "No se pudo cancelar la cita", 500
+
+    # Notificación opcional al cliente
+    telefono_cliente = cita.get("cliente_id")
+    if telefono_cliente:
+        enviar_whatsapp(
+            telefono_cliente,
+            f"Tu cita de {cita.get('servicio')} para el {formatear_fecha_es(cita.get('fecha'))} a las {formatear_hora_12h(cita.get('hora'))} fue cancelada correctamente."
+        )
+
+    # Notificación opcional al barbero
+    barbero = obtener_barbero_por_id(cita.get("barbero_id"))
+    telefono_barbero = barbero.get("telefono") if barbero else None
+    if telefono_barbero:
+        enviar_whatsapp(
+            telefono_barbero,
+            f"El cliente {cita.get('cliente')} canceló la cita de {cita.get('servicio')} para el {formatear_fecha_es(cita.get('fecha'))} a las {formatear_hora_12h(cita.get('hora'))}."
+        )
+
+    return render_template("cancelacion_exitosa.html", mensaje="Tu cita fue cancelada correctamente.")
 
 @app.route("/panel/<slug_barbero>")
 def panel_barbero(slug_barbero):
