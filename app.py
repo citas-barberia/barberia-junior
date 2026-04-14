@@ -603,7 +603,7 @@ def guardar():
     print("CITA DEVUELTA:", cita)
 
     if not cita or not isinstance(cita, list) or len(cita) == 0:
-        print("ERROR: crear_cita no devolvió datos.")
+        print("ERROR: crear_cita no devolvió datos")
         flash("No se pudo guardar la cita.")
         return redirect(url_for("index"))
 
@@ -616,8 +616,8 @@ def guardar():
     print("TOKEN CANCELACION:", token_cancelacion)
 
     if not token_cancelacion:
-        print("ERROR: la cita se guardó pero no regresó token_cancelacion")
-        flash("La cita se creó, pero faltó el token de cancelación.")
+        print("ERROR: token_cancelacion vino vacío")
+        flash("La cita se creó, pero no se pudo generar el link de cancelación.")
         return redirect(url_for("index"))
 
     cancelar_url = url_for("ver_cancelacion", token=token_cancelacion, _external=True)
@@ -631,13 +631,12 @@ def guardar():
         fecha=fecha_bonita,
         hora=hora_12h,
     )
+    print("ENVIO CONFIRMACION:", ok_confirmacion)
 
     ok_cancelar = enviar_whatsapp(
         telefono,
         f"Si necesitas cancelar tu cita, usa este enlace: {cancelar_url}"
     )
-
-    print("ENVIO CONFIRMACION:", ok_confirmacion)
     print("ENVIO LINK CANCELAR:", ok_cancelar)
 
     if telefono_barbero:
@@ -651,13 +650,8 @@ def guardar():
         )
         print("ENVIO BARBERO:", ok_barbero)
 
-    print("Telefono cliente:", telefono)
-    print("Telefono barbero:", telefono_barbero)
-    print("Nombre barbero:", nombre_barbero)
-
     flash("Cita creada correctamente.")
     return redirect(url_for("index"))
-
 
 @app.route("/horas")
 def horas():
