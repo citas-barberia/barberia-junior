@@ -24,6 +24,68 @@ servicios = {
     "Corte Niño": 4500,
 }
 
+
+def enviar_whatsapp_template_confirmacion_cancelable(
+    numero, nombre_cliente, nombre_barbero, servicio, fecha, hora, token_cancelacion
+):
+    if not numero:
+        return False
+
+    numero = normalizar_numero_cr(numero)
+    token = (os.getenv("WHATSAPP_TOKEN") or "").strip()
+    phone_number_id = (os.getenv("PHONE_NUMBER_ID") or "").strip()
+
+    if not token or not phone_number_id:
+        print("Faltan WHATSAPP_TOKEN o PHONE_NUMBER_ID")
+        return False
+
+    url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "messaging_product": "whatsapp",
+        "to": numero,
+        "type": "template",
+        "template": {
+            "name": "confirmacion_cita_cancelacion",
+            "language": {
+                "code": "es_CR"
+            },
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": str(nombre_cliente)},
+                        {"type": "text", "text": str(servicio)},
+                        {"type": "text", "text": str(fecha)},
+                        {"type": "text", "text": str(hora)},
+                        {"type": "text", "text": str(nombre_barbero)}
+                    ]
+                },
+                {
+                    "type": "button",
+                    "sub_type": "url",
+                    "index": "0",
+                    "parameters": [
+                        {"type": "text", "text": str(token_cancelacion)}
+                    ]
+                }
+            ]
+        }
+    }
+
+    try:
+        print("Payload confirmacion cancelable:", data)
+        r = requests.post(url, headers=headers, json=data, timeout=15)
+        print("WhatsApp status:", r.status_code, r.text)
+        return r.status_code < 400
+    except Exception as e:
+        print("Error enviando template confirmacion cancelable:", e)
+        return False
+
 def obtener_rango_semana_actual():
     ahora = datetime.now(TZ)
     hoy = ahora.date()
@@ -623,22 +685,17 @@ def guardar():
     cancelar_url = url_for("ver_cancelacion", token=token_cancelacion, _external=True)
     print("LINK CANCELACION:", cancelar_url)
 
-    ok_confirmacion = enviar_whatsapp_template_confirmacion(
+    ok_confirmacion = enviar_whatsapp_template_confirmacion_cancelable(
         numero=telefono,
         nombre_cliente=cliente,
         nombre_barbero=nombre_barbero,
         servicio=servicio,
         fecha=fecha_bonita,
         hora=hora_12h,
+        token_cancelacion=token_cancelacion
     )
     print("ENVIO CONFIRMACION:", ok_confirmacion)
-
-    ok_cancelar = enviar_whatsapp(
-        telefono,
-        f"Si necesitas cancelar tu cita, usa este enlace: {cancelar_url}"
-    )
-    print("ENVIO LINK CANCELAR:", ok_cancelar)
-
+   
     if telefono_barbero:
         ok_barbero = enviar_whatsapp_template_barbero(
             numero=telefono_barbero,
