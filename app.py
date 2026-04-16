@@ -707,8 +707,14 @@ def guardar():
         )
         print("ENVIO BARBERO:", ok_barbero)
 
-    flash("Cita creada correctamente.")
-    return redirect(url_for("index"))
+    link_wa = f"https://wa.me/{telefono}"
+
+    return render_template(
+    "confirmacion.html",
+    cliente=cliente,
+    link_wa=link_wa,
+    cancelar_url=cancelar_url
+)
 
 @app.route("/horas")
 def horas():
