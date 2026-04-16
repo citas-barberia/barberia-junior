@@ -707,14 +707,12 @@ def guardar():
         )
         print("ENVIO BARBERO:", ok_barbero)
 
-    link_wa = f"https://wa.me/{telefono}"
+    if ok_confirmacion:
+        flash("Cita agendada correctamente. Te enviamos la confirmación por WhatsApp.")
+    else:
+        flash("Cita agendada correctamente. No se pudo enviar la confirmación por WhatsApp.")
 
-    return render_template(
-    "confirmacion.html",
-    cliente=cliente,
-    link_wa=link_wa,
-    cancelar_url=cancelar_url
-)
+    return redirect(url_for("index"))
 
 @app.route("/horas")
 def horas():
