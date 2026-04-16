@@ -709,26 +709,7 @@
         </div>
     </div>
 
-    <div class="tabla-desktop">
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Ganancia</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for dia in dias_semana %}
-                    <tr>
-                        <td>{{ dia.fecha_bonita }}</td>
-                        <td>₡{{ dia.ganancia }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+   
 
     <div class="citas-mobile">
         {% if dias_semana %}
