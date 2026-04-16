@@ -4,39 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barbería Junior</title>
-    <style>
-        * { box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background: #0f0f10; color: white; margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: auto; background: #1b1b1c; padding: 25px; border-radius: 20px; }
-        h1 { color: #D4AF37; text-align: center; }
-        label { display: block; margin-top: 15px; margin-bottom: 8px; color: #D4AF37; font-weight: bold; }
-        input, select, button {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: 1px solid #333;
-            background: #242425;
-            color: white;
-            font-size: 16px;
-        }
-        button {
-            background: #D4AF37;
-            color: black;
-            font-weight: bold;
-            border: none;
-            margin-top: 20px;
-            cursor: pointer;
-        }
-        .flash {
-            background: #D4AF37;
-            color: black;
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+
+    body {
+        background: #0f0f10;
+        color: white;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 500px;
+        margin: auto;
+        background: #1b1b1c;
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    h1 {
+        color: #D4AF37;
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-size: clamp(28px, 6vw, 42px);
+    }
+
+    label {
+        display: block;
+        margin-top: 15px;
+        margin-bottom: 8px;
+        color: #D4AF37;
+        font-weight: bold;
+    }
+
+    input, select, button {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid #333;
+        background: #242425;
+        color: white;
+        font-size: 16px;
+    }
+
+    input:focus, select:focus {
+        outline: none;
+        border-color: #D4AF37;
+        box-shadow: 0 0 0 3px rgba(212,175,55,0.12);
+    }
+
+    button {
+        background: linear-gradient(135deg, #D4AF37, #b8921f);
+        color: black;
+        font-weight: bold;
+        border: none;
+        margin-top: 22px;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(212,175,55,0.22);
+    }
+
+    .flash {
+        background: linear-gradient(135deg, #D4AF37, #b8921f);
+        color: #111;
+        padding: 14px 16px;
+        border-radius: 14px;
+        margin-bottom: 18px;
+        text-align: center;
+        font-weight: bold;
+        box-shadow: 0 10px 24px rgba(212, 175, 55, 0.22);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    @media (max-width: 560px) {
+        body {
             padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-weight: bold;
         }
-    </style>
+
+        .container {
+            padding: 18px;
+            border-radius: 18px;
+        }
+
+        input, select, button {
+            font-size: 15px;
+        }
+    }
+</style>
 </head>
 <body>
 <div class="container">
