@@ -331,6 +331,108 @@
             width: 100%;
         }
     }
+    .tabla-desktop {
+        display: block;
+    }
+
+    .citas-mobile {
+        display: none;
+    }
+
+    .cita-card {
+        background: #202126;
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 14px;
+    }
+
+    .cita-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .cita-cliente {
+        font-size: 18px;
+        font-weight: 800;
+        color: white;
+        margin: 0;
+    }
+
+    .cita-servicio {
+        font-size: 14px;
+        color: #bbb;
+        margin-top: 4px;
+    }
+
+    .cita-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .cita-item {
+        background: #18191d;
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    .cita-label {
+        font-size: 12px;
+        color: #aaa;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+
+    .cita-value {
+        font-size: 15px;
+        font-weight: 700;
+        color: white;
+        line-height: 1.25;
+        word-break: break-word;
+    }
+
+    .cita-acciones {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .cita-acciones form {
+        margin: 0;
+    }
+
+    .cita-acciones .btn {
+        width: 100%;
+    }
+
+    .sin-citas {
+        background: #202126;
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 16px;
+        padding: 16px;
+        color: #bbb;
+        text-align: center;
+    }
+
+    @media (max-width: 640px) {
+        .tabla-desktop {
+            display: none;
+        }
+
+        .citas-mobile {
+            display: block;
+        }
+
+        .cita-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
 </style>
 </head>
 <body>
@@ -367,49 +469,105 @@
             </div>
         </div>
 
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Cliente</th>
-                        <th>Servicio</th>
-                        <th>Precio</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in citas %}
-                    <tr>
-                        <td>{{ c.fecha_bonita }}</td>
-                        <td>{{ c.hora }}</td>
-                        <td>{{ c.cliente }}</td>
-                        <td>{{ c.servicio }}</td>
-                        <td>₡{{ c.precio }}</td>
-                        <td><span class="tag {{ c.estado }}">{{ c.estado }}</span></td>
-                        <td>
-                            {% if c.estado == "activa" %}
-                            <div class="acciones">
-                                <form action="/panel/atendida" method="POST">
-                                    <input type="hidden" name="id" value="{{ c.id }}">
-                                    <button class="btn btn-ok" type="submit">Atendida</button>
-                                </form>
-                                <form action="/panel/cancelar" method="POST" onsubmit="return confirm('¿Cancelar esta cita?');">
-                                    <input type="hidden" name="id" value="{{ c.id }}">
-                                    <button class="btn btn-danger" type="submit">Cancelar</button>
-                                </form>
-                            </div>
-                            {% else %}
-                            —
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="tabla-desktop">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Cliente</th>
+                    <th>Servicio</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in citas %}
+                <tr>
+                    <td>{{ c.fecha_bonita }}</td>
+                    <td>{{ c.hora }}</td>
+                    <td>{{ c.cliente }}</td>
+                    <td>{{ c.servicio }}</td>
+                    <td>₡{{ c.precio }}</td>
+                    <td><span class="tag {{ c.estado }}">{{ c.estado }}</span></td>
+                    <td>
+                        {% if c.estado == "activa" %}
+                        <div class="acciones">
+                            <form action="/panel/atendida" method="POST">
+                                <input type="hidden" name="id" value="{{ c.id }}">
+                                <button class="btn btn-ok" type="submit">Atendida</button>
+                            </form>
+                            <form action="/panel/cancelar" method="POST" onsubmit="return confirm('¿Cancelar esta cita?');">
+                                <input type="hidden" name="id" value="{{ c.id }}">
+                                <button class="btn btn-danger" type="submit">Cancelar</button>
+                            </form>
+                        </div>
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="citas-mobile">
+    {% if citas %}
+        {% for c in citas %}
+        <div class="cita-card">
+            <div class="cita-card-top">
+                <div>
+                    <p class="cita-cliente">{{ c.cliente }}</p>
+                    <div class="cita-servicio">{{ c.servicio }}</div>
+                </div>
+                <span class="tag {{ c.estado }}">{{ c.estado }}</span>
+            </div>
+
+            <div class="cita-grid">
+                <div class="cita-item">
+                    <div class="cita-label">Fecha</div>
+                    <div class="cita-value">{{ c.fecha_bonita }}</div>
+                </div>
+
+                <div class="cita-item">
+                    <div class="cita-label">Hora</div>
+                    <div class="cita-value">{{ c.hora }}</div>
+                </div>
+
+                <div class="cita-item">
+                    <div class="cita-label">Precio</div>
+                    <div class="cita-value">₡{{ c.precio }}</div>
+                </div>
+
+                <div class="cita-item">
+                    <div class="cita-label">Estado</div>
+                    <div class="cita-value">{{ c.estado }}</div>
+                </div>
+            </div>
+
+            {% if c.estado == "activa" %}
+            <div class="cita-acciones">
+                <form action="/panel/atendida" method="POST">
+                    <input type="hidden" name="id" value="{{ c.id }}">
+                    <button class="btn btn-ok" type="submit">Atendida</button>
+                </form>
+
+                <form action="/panel/cancelar" method="POST" onsubmit="return confirm('¿Cancelar esta cita?');">
+                    <input type="hidden" name="id" value="{{ c.id }}">
+                    <button class="btn btn-danger" type="submit">Cancelar</button>
+                </form>
+            </div>
+            {% endif %}
         </div>
+        {% endfor %}
+    {% else %}
+        <div class="sin-citas">No hay citas registradas.</div>
+    {% endif %}
+</div>
     </div>
 
 <div id="seccion-manana" class="seccion">
