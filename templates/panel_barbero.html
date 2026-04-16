@@ -433,6 +433,11 @@
             grid-template-columns: 1fr 1fr;
         }
     }
+    @media (max-width: 640px) {
+    .stats .card:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+}
 </style>
 </head>
 <body>
@@ -461,7 +466,6 @@
             <div class="card"><div class="t">Activas</div><div class="v">{{ stats.total_activas }}</div></div>
             <div class="card"><div class="t">Atendidas</div><div class="v">{{ stats.total_atendidas }}</div></div>
             <div class="card"><div class="t">Canceladas</div><div class="v">{{ stats.total_canceladas }}</div></div>
-            <div class="card"><div class="t">Total cobrado</div><div class="v">₡{{ stats.total_cobrado }}</div></div>
             <div class="card">
                 <div class="t">Hoy</div>
                 <div class="v">₡{{ stats.ganancia_hoy }}</div>
