@@ -4,192 +4,304 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de {{ barbero.nombre }}</title>
-    <style>
-        * { box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background: #0f0f10; color: white; margin: 0; padding: 20px; }
-        .container { max-width: 1100px; margin: auto; background: #1b1b1c; padding: 25px; border-radius: 20px; }
-        h1 { color: #D4AF37; margin-top: 0; }
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
 
-        .links { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .links a {
-            text-decoration: none;
-            background: #D4AF37;
-            color: black;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-weight: bold;
+    body {
+        background: #0f0f10;
+        color: white;
+        margin: 0;
+        padding: 16px;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 1100px;
+        margin: auto;
+        background: #1b1b1c;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    h1 {
+        color: #D4AF37;
+        margin-top: 0;
+        margin-bottom: 18px;
+        font-size: clamp(28px, 5vw, 52px);
+        line-height: 1.1;
+    }
+
+    .links {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .tab-btn {
+        background: #D4AF37;
+        color: black;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        min-height: 44px;
+    }
+
+    .tab-btn.active {
+        background: white;
+        color: black;
+    }
+
+    .flash {
+        background: #D4AF37;
+        color: black;
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .seccion { display: none; }
+    .seccion.visible { display: block; }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .card {
+        background: #242425;
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid #333;
+        min-width: 0;
+    }
+
+    .card .t {
+        color: #bbb;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .card .v {
+        font-size: 24px;
+        font-weight: bold;
+        word-break: break-word;
+    }
+
+    .table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 14px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+    }
+
+    th, td {
+        padding: 12px;
+        border-bottom: 1px solid #333;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        color: #D4AF37;
+        background: #202021;
+        white-space: nowrap;
+    }
+
+    td {
+        white-space: nowrap;
+    }
+
+    .tag {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .activa { background: #198754; color: white; }
+    .cancelada { background: #dc3545; color: white; }
+    .atendida { background: #0d6efd; color: white; }
+
+    .acciones {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .acciones form {
+        margin: 0;
+    }
+
+    .btn {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-weight: bold;
+        cursor: pointer;
+        min-height: 40px;
+        white-space: nowrap;
+    }
+
+    .btn-ok { background: #D4AF37; color: black; }
+    .btn-danger { background: #dc3545; color: white; }
+
+    .reserva-box {
+        background: #242425;
+        border: 1px solid #333;
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 20px;
+    }
+
+    .reserva-box h2 {
+        margin-top: 0;
+        color: #D4AF37;
+        font-size: 20px;
+    }
+
+    .reserva-grid {
+        display: grid;
+        grid-template-columns: 1.4fr 260px;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .reserva-url-label {
+        color: #bbb;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .reserva-url-wrap {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .reserva-url {
+        flex: 1;
+        min-width: 220px;
+        background: #111;
+        color: white;
+        border: 1px solid #444;
+        border-radius: 10px;
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .qr-box {
+        text-align: center;
+    }
+
+    .qr-box img {
+        width: 220px;
+        max-width: 100%;
+        background: white;
+        padding: 10px;
+        border-radius: 14px;
+    }
+
+    .qr-text {
+        color: #bbb;
+        font-size: 13px;
+        margin-top: 10px;
+    }
+
+    @media (max-width: 820px) {
+        body {
+            padding: 10px;
         }
 
-        .tab-btn {
-            background: #D4AF37;
-            color: black;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
+        .container {
+            padding: 14px;
+            border-radius: 16px;
         }
-
-        .tab-btn.active {
-            background: white;
-            color: black;
-        }
-
-        .flash {
-            background: #D4AF37;
-            color: black;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .seccion { display: none; }
-        .seccion.visible { display: block; }
 
         .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            background: #242425;
-            padding: 16px;
-            border-radius: 14px;
-            border: 1px solid #333;
-        }
-
-        .card .t {
-            color: #bbb;
-            font-size: 13px;
-            margin-bottom: 6px;
-        }
-
-        .card .v {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .table-wrap { overflow-x: auto; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 900px;
-        }
-
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #333;
-            text-align: left;
-        }
-
-        th {
-            color: #D4AF37;
-            background: #202021;
-        }
-
-        .tag {
-            display: inline-block;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .activa { background: #198754; color: white; }
-        .cancelada { background: #dc3545; color: white; }
-        .atendida { background: #0d6efd; color: white; }
-
-        .acciones { display: flex; gap: 8px; }
-
-        .btn {
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-ok { background: #D4AF37; color: black; }
-        .btn-danger { background: #dc3545; color: white; }
-
-        .reserva-box {
-            background: #242425;
-            border: 1px solid #333;
-            border-radius: 16px;
-            padding: 18px;
-            margin-bottom: 20px;
-        }
-
-        .reserva-box h2 {
-            margin-top: 0;
-            color: #D4AF37;
-            font-size: 20px;
+            grid-template-columns: 1fr 1fr;
         }
 
         .reserva-grid {
-            display: grid;
-            grid-template-columns: 1.4fr 260px;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .reserva-url-label {
-            color: #bbb;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        .reserva-url-wrap {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .reserva-url {
-            flex: 1;
-            min-width: 260px;
-            background: #111;
-            color: white;
-            border: 1px solid #444;
-            border-radius: 10px;
-            padding: 12px;
-            font-size: 14px;
+            grid-template-columns: 1fr;
         }
 
         .qr-box {
             text-align: center;
         }
 
-        .qr-box img {
-            width: 220px;
-            max-width: 100%;
-            background: white;
+        .reserva-url-wrap {
+            flex-direction: column;
+        }
+
+        .reserva-url,
+        .reserva-url-wrap .btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 560px) {
+        h1 {
+            font-size: 26px;
+        }
+
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .links {
+            gap: 8px;
+        }
+
+        .tab-btn {
+            flex: 1 1 calc(50% - 8px);
+            text-align: center;
+            padding: 12px 10px;
+        }
+
+        table {
+            min-width: 640px;
+        }
+
+        th, td {
             padding: 10px;
-            border-radius: 14px;
+            font-size: 14px;
         }
 
-        .qr-text {
-            color: #bbb;
-            font-size: 13px;
-            margin-top: 10px;
+        .card {
+            padding: 14px;
         }
 
-        @media (max-width: 820px) {
-            .reserva-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .qr-box {
-                text-align: left;
-            }
+        .card .v {
+            font-size: 22px;
         }
-    </style>
+
+        .acciones {
+            flex-direction: column;
+            align-items: stretch;
+            min-width: 120px;
+        }
+
+        .acciones .btn {
+            width: 100%;
+        }
+    }
+</style>
 </head>
 <body>
 <div class="container">
