@@ -438,6 +438,30 @@
         grid-column: 1 / -1;
     }
 }
+.cita-card {
+    background: #202126;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 14px;
+}
+
+.cita-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.cita-item {
+    background: #18191d;
+    border-radius: 12px;
+    padding: 10px 12px;
+    min-width: 0;
+}
+
+.cita-value {
+    word-break: break-word;
+}
 </style>
 </head>
 <body>
@@ -575,48 +599,104 @@
     </div>
 
 <div id="seccion-manana" class="seccion">
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Cliente</th>
-                    <th>Servicio</th>
-                    <th>Precio</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in citas_manana %}
-                <tr>
-                    <td>{{ c.fecha_bonita }}</td>
-                    <td>{{ c.hora }}</td>
-                    <td>{{ c.cliente }}</td>
-                    <td>{{ c.servicio }}</td>
-                    <td>₡{{ c.precio }}</td>
-                    <td><span class="tag {{ c.estado }}">{{ c.estado }}</span></td>
-                    <td>
-                        {% if c.estado == "activa" %}
-                        <div class="acciones">
-                            <form action="/panel/atendida" method="POST">
-                                <input type="hidden" name="id" value="{{ c.id }}">
-                                <button class="btn btn-ok" type="submit">Atendida</button>
-                            </form>
-                            <form action="/panel/cancelar" method="POST" onsubmit="return confirm('¿Cancelar esta cita?');">
-                                <input type="hidden" name="id" value="{{ c.id }}">
-                                <button class="btn btn-danger" type="submit">Cancelar</button>
-                            </form>
-                        </div>
-                        {% else %}
-                        —
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="tabla-desktop">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in citas_manana %}
+                    <tr>
+                        <td>{{ c.fecha_bonita }}</td>
+                        <td>{{ c.hora }}</td>
+                        <td>{{ c.cliente }}</td>
+                        <td>{{ c.servicio }}</td>
+                        <td>₡{{ c.precio }}</td>
+                        <td><span class="tag {{ c.estado }}">{{ c.estado }}</span></td>
+                        <td>
+                            {% if c.estado == "activa" %}
+                            <div class="acciones">
+                                <form action="/panel/atendida" method="POST">
+                                    <input type="hidden" name="id" value="{{ c.id }}">
+                                    <button class="btn btn-ok" type="submit">Atendida</button>
+                                </form>
+                                <form action="/panel/cancelar" method="POST" onsubmit="return confirm('¿Cancelar esta cita?');">
+                                    <input type="hidden" name="id" value="{{ c.id }}">
+                                    <button class="btn btn-danger" type="submit">Cancelar</button>
+                                </form>
+                            </div>
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="citas-mobile">
+        {% if citas_manana %}
+            {% for c in citas_manana %}
+            <div class="cita-card">
+                <div class="cita-card-top">
+                    <div>
+                        <p class="cita-cliente">{{ c.cliente }}</p>
+                        <div class="cita-servicio">{{ c.servicio }}</div>
+                    </div>
+                    <span class="tag {{ c.estado }}">{{ c.estado }}</span>
+                </div>
+
+                <div class="cita-grid">
+                    <div class="cita-item">
+                        <div class="cita-label">Fecha</div>
+                        <div class="cita-value">{{ c.fecha_bonita }}</div>
+                    </div>
+
+                    <div class="cita-item">
+                        <div class="cita-label">Hora</div>
+                        <div class="cita-value">{{ c.hora }}</div>
+                    </div>
+
+                    <div class="cita-item">
+                        <div class="cita-label">Precio</div>
+                        <div class="cita-value">₡{{ c.precio }}</div>
+                    </div>
+
+                    <div class="cita-item">
+                        <div class="cita-label">Estado</div>
+                        <div class="cita-value">{{ c.estado }}</div>
+                    </div>
+                </div>
+
+                {% if c.estado == "activa" %}
+                <div class="cita-acciones">
+                    <form action="/panel/atendida" method="POST">
+                        <input type="hidden" name="id" value="{{ c.id }}">
+                        <button class="btn btn-ok" type="submit">Atendida</button>
+                    </form>
+
+                    <form action="/panel/cancelar" method="POST" onsubmit="return confirm('¿Cancelar esta cita?');">
+                        <input type="hidden" name="id" value="{{ c.id }}">
+                        <button class="btn btn-danger" type="submit">Cancelar</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="sin-citas">No hay citas para mañana.</div>
+        {% endif %}
     </div>
 </div>
 
@@ -629,23 +709,46 @@
         </div>
     </div>
 
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Ganancia</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for dia in dias_semana %}
-                <tr>
-                    <td>{{ dia.fecha_bonita }}</td>
-                    <td>₡{{ dia.ganancia }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="tabla-desktop">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Ganancia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dia in dias_semana %}
+                    <tr>
+                        <td>{{ dia.fecha_bonita }}</td>
+                        <td>₡{{ dia.ganancia }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="citas-mobile">
+        {% if dias_semana %}
+            {% for dia in dias_semana %}
+            <div class="cita-card">
+                <div class="cita-grid">
+                    <div class="cita-item">
+                        <div class="cita-label">Fecha</div>
+                        <div class="cita-value">{{ dia.fecha_bonita }}</div>
+                    </div>
+                    <div class="cita-item">
+                        <div class="cita-label">Ganancia</div>
+                        <div class="cita-value">₡{{ dia.ganancia }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="sin-citas">No hay datos semanales.</div>
+        {% endif %}
     </div>
 </div>
 
@@ -657,6 +760,49 @@
             <div class="t">Año actual</div>
         </div>
     </div>
+
+    <div class="tabla-desktop">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th>Ganancia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in meses_data %}
+                    <tr>
+                        <td>{{ item.mes }}</td>
+                        <td>₡{{ item.ganancia }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="citas-mobile">
+        {% if meses_data %}
+            {% for item in meses_data %}
+            <div class="cita-card">
+                <div class="cita-grid">
+                    <div class="cita-item">
+                        <div class="cita-label">Mes</div>
+                        <div class="cita-value">{{ item.mes }}</div>
+                    </div>
+                    <div class="cita-item">
+                        <div class="cita-label">Ganancia</div>
+                        <div class="cita-value">₡{{ item.ganancia }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="sin-citas">No hay datos mensuales.</div>
+        {% endif %}
+    </div>
+</div>
 
     <div class="table-wrap">
         <table>
