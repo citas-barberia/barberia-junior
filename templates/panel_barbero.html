@@ -4,93 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de {{ barbero.nombre }}</title>
-  <style>
-    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+ <style>
+    * {
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
 
     body {
-        background: #0f0f10;
+        background: #0b0b0c;
         color: white;
         margin: 0;
-        padding: 16px;
+        padding: 12px;
     }
 
     .container {
         width: 100%;
-        max-width: 1100px;
-        margin: auto;
-        background: #1b1b1c;
-        padding: 20px;
-        border-radius: 20px;
+        max-width: 820px;
+        margin: 0 auto;
+        background: #17181b;
+        padding: 16px;
+        border-radius: 24px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.35);
     }
 
     h1 {
         color: #D4AF37;
-        margin-top: 0;
-        margin-bottom: 18px;
-        font-size: clamp(28px, 5vw, 52px);
-        line-height: 1.1;
+        margin: 0 0 14px 0;
+        font-size: clamp(30px, 8vw, 64px);
+        line-height: 1.05;
+        font-weight: 800;
+        letter-spacing: -1px;
     }
 
     .links {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-bottom: 20px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
     }
 
     .tab-btn {
         background: #D4AF37;
         color: black;
-        padding: 10px 14px;
-        border-radius: 10px;
-        font-weight: bold;
+        padding: 16px 12px;
+        border-radius: 18px;
+        font-weight: 800;
+        font-size: 16px;
         border: none;
         cursor: pointer;
-        min-height: 44px;
+        min-height: 64px;
+        transition: 0.2s ease;
     }
 
     .tab-btn.active {
-        background: white;
+        background: #f1f1f1;
         color: black;
+    }
+
+    .links .tab-btn:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
     }
 
     .flash {
         background: #D4AF37;
         color: black;
         padding: 12px;
-        border-radius: 10px;
-        margin-bottom: 15px;
+        border-radius: 12px;
+        margin-bottom: 14px;
         text-align: center;
         font-weight: bold;
     }
 
-    .seccion { display: none; }
-    .seccion.visible { display: block; }
+    .seccion {
+        display: none;
+    }
+
+    .seccion.visible {
+        display: block;
+    }
 
     .stats {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 12px;
-        margin-bottom: 20px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+        margin-bottom: 18px;
     }
 
     .card {
-        background: #242425;
-        padding: 16px;
-        border-radius: 14px;
-        border: 1px solid #333;
-        min-width: 0;
+        background: #202126;
+        padding: 18px 16px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.06);
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .card .t {
-        color: #bbb;
-        font-size: 13px;
-        margin-bottom: 6px;
+        color: #d1d1d1;
+        font-size: 14px;
+        margin-bottom: 10px;
     }
 
     .card .v {
-        font-size: 24px;
-        font-weight: bold;
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1;
         word-break: break-word;
     }
 
@@ -98,36 +118,39 @@
         width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        border-radius: 14px;
+        border-radius: 16px;
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 760px;
+        min-width: 700px;
+        background: transparent;
     }
 
     th, td {
-        padding: 12px;
-        border-bottom: 1px solid #333;
+        padding: 12px 10px;
+        border-bottom: 1px solid #2f3138;
         text-align: left;
         vertical-align: top;
     }
 
     th {
         color: #D4AF37;
-        background: #202021;
+        background: #1b1c20;
         white-space: nowrap;
+        font-size: 14px;
     }
 
     td {
         white-space: nowrap;
+        font-size: 14px;
     }
 
     .tag {
         display: inline-block;
         padding: 6px 10px;
-        border-radius: 8px;
+        border-radius: 10px;
         font-size: 12px;
         font-weight: bold;
         text-transform: uppercase;
@@ -150,21 +173,29 @@
 
     .btn {
         border: none;
-        border-radius: 8px;
+        border-radius: 12px;
         padding: 10px 12px;
         font-weight: bold;
         cursor: pointer;
-        min-height: 40px;
+        min-height: 42px;
         white-space: nowrap;
+        font-size: 14px;
     }
 
-    .btn-ok { background: #D4AF37; color: black; }
-    .btn-danger { background: #dc3545; color: white; }
+    .btn-ok {
+        background: #D4AF37;
+        color: black;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
 
     .reserva-box {
-        background: #242425;
-        border: 1px solid #333;
-        border-radius: 16px;
+        background: #202126;
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 20px;
         padding: 18px;
         margin-bottom: 20px;
     }
@@ -173,13 +204,14 @@
         margin-top: 0;
         color: #D4AF37;
         font-size: 20px;
+        margin-bottom: 14px;
     }
 
     .reserva-grid {
         display: grid;
-        grid-template-columns: 1.4fr 260px;
-        gap: 20px;
-        align-items: center;
+        grid-template-columns: 1fr;
+        gap: 18px;
+        align-items: start;
     }
 
     .reserva-url-label {
@@ -190,17 +222,16 @@
 
     .reserva-url-wrap {
         display: flex;
+        flex-direction: column;
         gap: 10px;
-        flex-wrap: wrap;
     }
 
     .reserva-url {
-        flex: 1;
-        min-width: 220px;
-        background: #111;
+        width: 100%;
+        background: #111217;
         color: white;
-        border: 1px solid #444;
-        border-radius: 10px;
+        border: 1px solid #3a3d46;
+        border-radius: 12px;
         padding: 12px;
         font-size: 14px;
     }
@@ -223,78 +254,77 @@
         margin-top: 10px;
     }
 
-    @media (max-width: 820px) {
+    @media (min-width: 768px) {
         body {
-            padding: 10px;
+            padding: 20px;
         }
 
         .container {
-            padding: 14px;
-            border-radius: 16px;
-        }
-
-        .stats {
-            grid-template-columns: 1fr 1fr;
-        }
-
-        .reserva-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .qr-box {
-            text-align: center;
-        }
-
-        .reserva-url-wrap {
-            flex-direction: column;
-        }
-
-        .reserva-url,
-        .reserva-url-wrap .btn {
-            width: 100%;
-        }
-    }
-
-    @media (max-width: 560px) {
-        h1 {
-            font-size: 26px;
-        }
-
-        .stats {
-            grid-template-columns: 1fr;
+            padding: 24px;
         }
 
         .links {
-            gap: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .tab-btn {
-            flex: 1 1 calc(50% - 8px);
-            text-align: center;
-            padding: 12px 10px;
+            min-height: auto;
+            padding: 10px 14px;
+            border-radius: 10px;
         }
 
-        table {
-            min-width: 640px;
-        }
-
-        th, td {
-            padding: 10px;
-            font-size: 14px;
+        .stats {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         }
 
         .card {
-            padding: 14px;
+            min-height: auto;
+        }
+
+        .reserva-grid {
+            grid-template-columns: 1.4fr 260px;
+        }
+
+        .reserva-url-wrap {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .reserva-url {
+            flex: 1;
+            min-width: 260px;
+        }
+    }
+
+    @media (max-width: 420px) {
+        h1 {
+            font-size: 28px;
+        }
+
+        .tab-btn {
+            font-size: 15px;
+            padding: 14px 10px;
+            min-height: 58px;
+        }
+
+        .card {
+            min-height: 108px;
+            padding: 16px 14px;
+        }
+
+        .card .t {
+            font-size: 13px;
         }
 
         .card .v {
-            font-size: 22px;
+            font-size: 24px;
         }
 
         .acciones {
             flex-direction: column;
             align-items: stretch;
-            min-width: 120px;
         }
 
         .acciones .btn {
