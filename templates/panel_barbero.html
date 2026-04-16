@@ -485,7 +485,7 @@
     {% endwith %}
 
     <div id="seccion-inicio" class="seccion visible">
-        <div class="stats">
+        <div class="stats"id="stats-inicio">
             <div class="card"><div class="t">Total citas</div><div class="v">{{ stats.total_citas }}</div></div>
             <div class="card"><div class="t">Activas</div><div class="v">{{ stats.total_activas }}</div></div>
             <div class="card"><div class="t">Atendidas</div><div class="v">{{ stats.total_atendidas }}</div></div>
@@ -497,7 +497,7 @@
             </div>
         </div>
 
-<div class="tabla-desktop">
+<div class="tabla-desktop" id="tabla-inicio">
     <div class="table-wrap">
         <table>
             <thead>
@@ -543,7 +543,7 @@
     </div>
 </div>
 
-<div class="citas-mobile">
+<div class="citas-mobile" id="mobile-inicio">
     {% if citas %}
         {% for c in citas %}
         <div class="cita-card">
@@ -599,7 +599,7 @@
     </div>
 
 <div id="seccion-manana" class="seccion">
-    <div class="tabla-desktop">
+    <div class="tabla-desktop" id="tabla-manana">
         <div class="table-wrap">
             <table>
                 <thead>
@@ -645,7 +645,7 @@
         </div>
     </div>
 
-    <div class="citas-mobile">
+    <div class="citas-mobile" id="mobile-manana">
         {% if citas_manana %}
             {% for c in citas_manana %}
             <div class="cita-card">
@@ -701,7 +701,7 @@
 </div>
 
 <div id="seccion-semanal" class="seccion">
-    <div class="stats">
+    <div class="stats" id="stats-semanal">
         <div class="card">
             <div class="t">Ganancia semanal</div>
             <div class="v">₡{{ stats.ganancia_semana }}</div>
@@ -711,7 +711,7 @@
 
    
 
-    <div class="citas-mobile">
+    <div class="citas-mobile"  id="mobile-semanal">
         {% if dias_semana %}
             {% for dia in dias_semana %}
             <div class="cita-card">
@@ -734,7 +734,7 @@
 </div>
 
 <div id="seccion-mensual" class="seccion">
-    <div class="stats">
+    <div class="stats" id="stats-mensual">
         <div class="card">
             <div class="t">Ganancias por mes</div>
             <div class="v">{{ stats.nombre_barbero }}</div>
@@ -742,7 +742,7 @@
         </div>
     </div>
 
-    <div class="tabla-desktop">
+    <div class="tabla-desktop" id="tabla-mensual">
         <div class="table-wrap">
             <table>
                 <thead>
@@ -763,7 +763,7 @@
         </div>
     </div>
 
-    <div class="citas-mobile">
+    <div class="citas-mobile" id="mobile-mensual">
         {% if meses_data %}
             {% for item in meses_data %}
             <div class="cita-card">
@@ -786,7 +786,7 @@
 </div>
 
     <div id="seccion-qr" class="seccion">
-        <div class="reserva-box">
+        <div class="reserva-box" id="qr-box-panel">
             <h2>Link de reservas para clientes</h2>
 
             <div class="reserva-grid">
@@ -817,7 +817,12 @@
 </div>
 
 <script>
+let currentSection = "inicio";
+let pollingEnCurso = false;
+
 function mostrarSeccion(nombre, boton) {
+    currentSection = nombre;
+
     const secciones = document.querySelectorAll(".seccion");
     secciones.forEach(sec => sec.classList.remove("visible"));
 
@@ -832,10 +837,304 @@ function mostrarSeccion(nombre, boton) {
 
 function copiarEnlace() {
     const input = document.getElementById("reservaUrl");
+    if (!input) return;
+
     navigator.clipboard.writeText(input.value)
         .then(() => alert("Link copiado correctamente"))
         .catch(() => alert("No se pudo copiar el link"));
 }
+
+function escapeHtml(valor) {
+    return String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function renderStatsInicio(stats) {
+    return `
+        <div class="card"><div class="t">Total citas</div><div class="v">${stats.total_citas}</div></div>
+        <div class="card"><div class="t">Activas</div><div class="v">${stats.total_activas}</div></div>
+        <div class="card"><div class="t">Atendidas</div><div class="v">${stats.total_atendidas}</div></div>
+        <div class="card"><div class="t">Canceladas</div><div class="v">${stats.total_canceladas}</div></div>
+        <div class="card">
+            <div class="t">Hoy</div>
+            <div class="v">₡${stats.ganancia_hoy}</div>
+            <div class="t">Ganancias del día actual</div>
+        </div>
+    `;
+}
+
+function renderTablaCitas(citas) {
+    const rows = citas.map(c => `
+        <tr>
+            <td>${escapeHtml(c.fecha_bonita)}</td>
+            <td>${escapeHtml(c.hora)}</td>
+            <td>${escapeHtml(c.cliente)}</td>
+            <td>${escapeHtml(c.servicio)}</td>
+            <td>₡${escapeHtml(c.precio)}</td>
+            <td><span class="tag ${escapeHtml(c.estado)}">${escapeHtml(c.estado)}</span></td>
+            <td>
+                ${c.estado === "activa" ? `
+                    <div class="acciones">
+                        <form action="/panel/atendida" method="POST">
+                            <input type="hidden" name="id" value="${escapeHtml(c.id)}">
+                            <button class="btn btn-ok" type="submit">Atendida</button>
+                        </form>
+                        <form action="/panel/cancelar" method="POST" onsubmit="return confirm('¿Cancelar esta cita?');">
+                            <input type="hidden" name="id" value="${escapeHtml(c.id)}">
+                            <button class="btn btn-danger" type="submit">Cancelar</button>
+                        </form>
+                    </div>
+                ` : "—"}
+            </td>
+        </tr>
+    `).join("");
+
+    return `
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows || `<tr><td colspan="7">No hay citas registradas.</td></tr>`}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function renderCitasMobile(citas, mensajeVacio) {
+    if (!citas.length) {
+        return `<div class="sin-citas">${mensajeVacio}</div>`;
+    }
+
+    return citas.map(c => `
+        <div class="cita-card">
+            <div class="cita-card-top">
+                <div>
+                    <p class="cita-cliente">${escapeHtml(c.cliente)}</p>
+                    <div class="cita-servicio">${escapeHtml(c.servicio)}</div>
+                </div>
+                <span class="tag ${escapeHtml(c.estado)}">${escapeHtml(c.estado)}</span>
+            </div>
+
+            <div class="cita-grid">
+                <div class="cita-item">
+                    <div class="cita-label">Fecha</div>
+                    <div class="cita-value">${escapeHtml(c.fecha_bonita)}</div>
+                </div>
+
+                <div class="cita-item">
+                    <div class="cita-label">Hora</div>
+                    <div class="cita-value">${escapeHtml(c.hora)}</div>
+                </div>
+
+                <div class="cita-item">
+                    <div class="cita-label">Precio</div>
+                    <div class="cita-value">₡${escapeHtml(c.precio)}</div>
+                </div>
+
+                <div class="cita-item">
+                    <div class="cita-label">Estado</div>
+                    <div class="cita-value">${escapeHtml(c.estado)}</div>
+                </div>
+            </div>
+
+            ${c.estado === "activa" ? `
+                <div class="cita-acciones">
+                    <form action="/panel/atendida" method="POST">
+                        <input type="hidden" name="id" value="${escapeHtml(c.id)}">
+                        <button class="btn btn-ok" type="submit">Atendida</button>
+                    </form>
+
+                    <form action="/panel/cancelar" method="POST" onsubmit="return confirm('¿Cancelar esta cita?');">
+                        <input type="hidden" name="id" value="${escapeHtml(c.id)}">
+                        <button class="btn btn-danger" type="submit">Cancelar</button>
+                    </form>
+                </div>
+            ` : ""}
+        </div>
+    `).join("");
+}
+
+function renderSemanalMobile(dias) {
+    if (!dias.length) {
+        return `<div class="sin-citas">No hay datos semanales.</div>`;
+    }
+
+    return dias.map(dia => `
+        <div class="cita-card">
+            <div class="cita-grid">
+                <div class="cita-item">
+                    <div class="cita-label">Fecha</div>
+                    <div class="cita-value">${escapeHtml(dia.fecha_bonita)}</div>
+                </div>
+                <div class="cita-item">
+                    <div class="cita-label">Ganancia</div>
+                    <div class="cita-value">₡${escapeHtml(dia.ganancia)}</div>
+                </div>
+            </div>
+        </div>
+    `).join("");
+}
+
+function renderMensualTabla(items) {
+    const rows = items.map(item => `
+        <tr>
+            <td>${escapeHtml(item.mes)}</td>
+            <td>₡${escapeHtml(item.ganancia)}</td>
+        </tr>
+    `).join("");
+
+    return `
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th>Ganancia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function renderMensualMobile(items) {
+    if (!items.length) {
+        return `<div class="sin-citas">No hay datos mensuales.</div>`;
+    }
+
+    return items.map(item => `
+        <div class="cita-card">
+            <div class="cita-grid">
+                <div class="cita-item">
+                    <div class="cita-label">Mes</div>
+                    <div class="cita-value">${escapeHtml(item.mes)}</div>
+                </div>
+                <div class="cita-item">
+                    <div class="cita-label">Ganancia</div>
+                    <div class="cita-value">₡${escapeHtml(item.ganancia)}</div>
+                </div>
+            </div>
+        </div>
+    `).join("");
+}
+
+function renderStatsSemanal(stats) {
+    return `
+        <div class="card">
+            <div class="t">Ganancia semanal</div>
+            <div class="v">₡${stats.ganancia_semana}</div>
+            <div class="t">${escapeHtml(stats.inicio_semana)} al ${escapeHtml(stats.fin_semana)}</div>
+        </div>
+    `;
+}
+
+function renderStatsMensual(stats) {
+    return `
+        <div class="card">
+            <div class="t">Ganancias por mes</div>
+            <div class="v">${escapeHtml(stats.nombre_barbero)}</div>
+            <div class="t">Año actual</div>
+        </div>
+    `;
+}
+
+function renderQrBox(data) {
+    return `
+        <h2>Link de reservas para clientes</h2>
+        <div class="reserva-grid">
+            <div>
+                <div class="reserva-url-label">
+                    Este es tu enlace fijo para compartir por WhatsApp, Instagram o redes:
+                </div>
+
+                <div class="reserva-url-wrap">
+                    <input
+                        type="text"
+                        id="reservaUrl"
+                        class="reserva-url"
+                        value="${escapeHtml(data.reserva_url)}"
+                        readonly
+                    >
+                    <button class="btn btn-ok" type="button" onclick="copiarEnlace()">Copiar link</button>
+                </div>
+            </div>
+
+            <div class="qr-box">
+                <img src="${escapeHtml(data.qr_url)}" alt="Código QR de reservas de ${escapeHtml(data.barbero.nombre)}">
+                <div class="qr-text">Escanéalo para abrir la reserva directa</div>
+            </div>
+        </div>
+    `;
+}
+
+async function refrescarPanel() {
+    if (pollingEnCurso) return;
+    pollingEnCurso = true;
+
+    try {
+        const slug = "{{ barbero.slug }}";
+        const res = await fetch(`/api/panel/${slug}/data?t=${Date.now()}`, { cache: "no-store" });
+
+        if (!res.ok) {
+            pollingEnCurso = false;
+            return;
+        }
+
+        const data = await res.json();
+
+        const statsInicio = document.getElementById("stats-inicio");
+        const tablaInicio = document.getElementById("tabla-inicio");
+        const mobileInicio = document.getElementById("mobile-inicio");
+        const tablaManana = document.getElementById("tabla-manana");
+        const mobileManana = document.getElementById("mobile-manana");
+        const statsSemanal = document.getElementById("stats-semanal");
+        const mobileSemanal = document.getElementById("mobile-semanal");
+        const statsMensual = document.getElementById("stats-mensual");
+        const tablaMensual = document.getElementById("tabla-mensual");
+        const mobileMensual = document.getElementById("mobile-mensual");
+        const qrBox = document.getElementById("qr-box-panel");
+
+        if (statsInicio) statsInicio.innerHTML = renderStatsInicio(data.stats);
+        if (tablaInicio) tablaInicio.innerHTML = renderTablaCitas(data.citas);
+        if (mobileInicio) mobileInicio.innerHTML = renderCitasMobile(data.citas, "No hay citas registradas.");
+
+        if (tablaManana) tablaManana.innerHTML = renderTablaCitas(data.citas_manana);
+        if (mobileManana) mobileManana.innerHTML = renderCitasMobile(data.citas_manana, "No hay citas para mañana.");
+
+        if (statsSemanal) statsSemanal.innerHTML = renderStatsSemanal(data.stats);
+        if (mobileSemanal) mobileSemanal.innerHTML = renderSemanalMobile(data.dias_semana);
+
+        if (statsMensual) statsMensual.innerHTML = renderStatsMensual(data.stats);
+        if (tablaMensual) tablaMensual.innerHTML = renderMensualTabla(data.meses_data);
+        if (mobileMensual) mobileMensual.innerHTML = renderMensualMobile(data.meses_data);
+
+        if (qrBox) qrBox.innerHTML = renderQrBox(data);
+    } catch (e) {
+        console.error("Error refrescando panel:", e);
+    } finally {
+        pollingEnCurso = false;
+    }
+}
+
+setInterval(refrescarPanel, 1000);
 </script>
 </body>
 </html>

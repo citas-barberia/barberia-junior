@@ -577,6 +577,156 @@ def crear_cita(cliente, cliente_id, barbero_id, servicio, precio, fecha, hora, d
         extra_headers={"Prefer": "return=representation"}
     )
 
+def construir_panel_barbero_data(slug_barbero):
+    citas_raw = obtener_citas_con_barbero()
+    barberos = obtener_barberos_activos()
+
+    barbero_obj = None
+    for b in barberos:
+        if b.get("slug") == slug_barbero:
+            barbero_obj = b
+            break
+
+    if not barbero_obj:
+        return None
+
+    citas_hoy = []
+    citas_manana = []
+
+    total_citas = 0
+    total_activas = 0
+    total_canceladas = 0
+    total_atendidas = 0
+    total_cobrado = 0
+
+    inicio_semana, fin_semana = obtener_rango_semana_actual()
+    hoy_iso = obtener_hoy_iso()
+    manana_iso = (datetime.now(TZ).date() + timedelta(days=1)).strftime("%Y-%m-%d")
+
+    ganancia_semana = 0
+    ganancia_hoy = 0
+    ganancias_por_dia = {}
+    ganancias_por_mes = {}
+    anio_actual = datetime.now(TZ).year
+
+    for c in citas_raw:
+        if int(c.get("barbero_id")) != int(barbero_obj["id"]):
+            continue
+
+        estado = (c.get("estado") or "activa").lower()
+        precio = int(c.get("precio") or 0)
+        fecha_cita = str(c.get("fecha") or "")
+
+        cita = {
+            "id": c.get("id"),
+            "cliente": c.get("cliente"),
+            "cliente_id": c.get("cliente_id"),
+            "servicio": c.get("servicio"),
+            "precio": precio,
+            "fecha": c.get("fecha"),
+            "fecha_bonita": formatear_fecha_corta_es(c.get("fecha")),
+            "hora": formatear_hora_12h(c.get("hora")),
+            "duracion": c.get("duracion"),
+            "estado": estado,
+            "barbero_id": c.get("barbero_id"),
+            "barbero_nombre": barbero_obj["nombre"]
+        }
+
+        if fecha_cita == hoy_iso:
+            citas_hoy.append(cita)
+
+        if fecha_cita == manana_iso:
+            citas_manana.append(cita)
+
+        total_citas += 1
+
+        if estado == "activa":
+            total_activas += 1
+        elif estado == "cancelada":
+            total_canceladas += 1
+        elif estado == "atendida":
+            total_atendidas += 1
+            total_cobrado += precio
+
+            if fecha_cita == hoy_iso:
+                ganancia_hoy += precio
+
+            if inicio_semana <= fecha_cita <= fin_semana:
+                ganancia_semana += precio
+                ganancias_por_dia[fecha_cita] = ganancias_por_dia.get(fecha_cita, 0) + precio
+
+            try:
+                fecha_obj = datetime.strptime(fecha_cita, "%Y-%m-%d")
+                if fecha_obj.year == anio_actual:
+                    mes_num = fecha_obj.month
+                    ganancias_por_mes[mes_num] = ganancias_por_mes.get(mes_num, 0) + precio
+            except:
+                pass
+
+    dias_semana = []
+    inicio_dt = datetime.strptime(inicio_semana, "%Y-%m-%d").date()
+
+    nombres_dias = [
+        "Lunes", "Martes", "Miércoles", "Jueves",
+        "Viernes", "Sábado", "Domingo"
+    ]
+
+    nombres_meses = [
+        "enero", "febrero", "marzo", "abril", "mayo", "junio",
+        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+    ]
+
+    for i in range(7):
+        dia = inicio_dt + timedelta(days=i)
+        dia_str = dia.strftime("%Y-%m-%d")
+
+        fecha_bonita = f"{nombres_dias[dia.weekday()]} {dia.day} de {nombres_meses[dia.month - 1]}"
+
+        dias_semana.append({
+            "fecha": dia_str,
+            "fecha_bonita": fecha_bonita,
+            "ganancia": ganancias_por_dia.get(dia_str, 0)
+        })
+
+    meses_anio = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ]
+
+    meses_data = []
+    for i in range(12):
+        mes_num = i + 1
+        meses_data.append({
+            "mes": meses_anio[i],
+            "ganancia": ganancias_por_mes.get(mes_num, 0)
+        })
+
+    stats = {
+        "total_citas": total_citas,
+        "total_activas": total_activas,
+        "total_canceladas": total_canceladas,
+        "total_atendidas": total_atendidas,
+        "total_cobrado": total_cobrado,
+        "ganancia_hoy": ganancia_hoy,
+        "ganancia_semana": ganancia_semana,
+        "inicio_semana": inicio_semana,
+        "fin_semana": fin_semana,
+        "nombre_barbero": barbero_obj["nombre"]
+    }
+
+    reserva_url = url_for("reservar_barbero", slug_barbero=barbero_obj["slug"], _external=True)
+    qr_url = f"https://quickchart.io/qr?text={quote(reserva_url)}&size=220"
+
+    return {
+        "barbero": barbero_obj,
+        "citas": citas_hoy,
+        "citas_manana": citas_manana,
+        "stats": stats,
+        "reserva_url": reserva_url,
+        "qr_url": qr_url,
+        "dias_semana": dias_semana,
+        "meses_data": meses_data
+    }
 @app.route("/")
 def index():
     barberos = obtener_barberos_activos()
@@ -832,6 +982,15 @@ def panel():
     }
 
     return render_template("panel.html", citas=citas, barberos=barberos, stats=stats)
+
+@app.route("/api/panel/<slug_barbero>/data")
+def api_panel_barbero_data(slug_barbero):
+    data = construir_panel_barbero_data(slug_barbero)
+
+    if not data:
+        return jsonify({"error": "Barbero no encontrado"}), 404
+
+    return jsonify(data)
 
 @app.route("/cancelar/<token>")
 def ver_cancelacion(token):
