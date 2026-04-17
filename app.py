@@ -1229,18 +1229,30 @@ def panel_barbero(slug_barbero):
 @app.route("/panel/cancelar", methods=["POST"])
 def panel_cancelar():
     cita_id = request.form.get("id")
-    if cita_id:
-        cambiar_estado_cita(cita_id, "cancelada")
-        flash("Cita cancelada correctamente.")
-    return redirect(request.referrer or url_for("panel"))
+
+    if not cita_id:
+        return jsonify({"ok": False, "mensaje": "Falta el id de la cita"}), 400
+
+    actualizado = cambiar_estado_cita(cita_id, "cancelada")
+
+    if actualizado is None:
+        return jsonify({"ok": False, "mensaje": "No se pudo cancelar la cita"}), 500
+
+    return jsonify({"ok": True, "mensaje": "Cita cancelada correctamente."})
 
 @app.route("/panel/atendida", methods=["POST"])
 def panel_atendida():
     cita_id = request.form.get("id")
-    if cita_id:
-        cambiar_estado_cita(cita_id, "atendida")
-        flash("Cita marcada como atendida.")
-    return redirect(request.referrer or url_for("panel"))
+
+    if not cita_id:
+        return jsonify({"ok": False, "mensaje": "Falta el id de la cita"}), 400
+
+    actualizado = cambiar_estado_cita(cita_id, "atendida")
+
+    if actualizado is None:
+        return jsonify({"ok": False, "mensaje": "No se pudo marcar la cita"}), 500
+
+    return jsonify({"ok": True, "mensaje": "Cita marcada como atendida."})
 
 @app.route("/api/recordatorios", methods=["POST"])
 def procesar_recordatorios():
