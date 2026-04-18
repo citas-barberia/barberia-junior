@@ -50,7 +50,7 @@ def enviar_whatsapp_template_confirmacion_cancelable(
         "to": numero,
         "type": "template",
         "template": {
-            "name": "confirmacion_cita_cancelacion_v2",
+            "name": "confirmacion_cita_cancelacion_v3",
             "language": {
                 "code": "es_CR"
             },
