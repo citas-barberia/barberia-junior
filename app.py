@@ -593,18 +593,17 @@ def construir_panel_barbero_data(slug_barbero):
     citas_hoy = []
     citas_manana = []
 
-    total_citas = 0
-    total_activas = 0
-    total_canceladas = 0
-    total_atendidas = 0
-    total_cobrado = 0
+    total_citas_hoy = 0
+    total_activas_hoy = 0
+    total_canceladas_hoy = 0
+    total_atendidas_hoy = 0
+    ganancia_hoy = 0
 
     inicio_semana, fin_semana = obtener_rango_semana_actual()
     hoy_iso = obtener_hoy_iso()
     manana_iso = (datetime.now(TZ).date() + timedelta(days=1)).strftime("%Y-%m-%d")
 
     ganancia_semana = 0
-    ganancia_hoy = 0
     ganancias_por_dia = {}
     ganancias_por_mes = {}
     anio_actual = datetime.now(TZ).year
@@ -635,22 +634,20 @@ def construir_panel_barbero_data(slug_barbero):
         if fecha_cita == hoy_iso:
             citas_hoy.append(cita)
 
+            total_citas_hoy += 1
+
+            if estado == "activa":
+                total_activas_hoy += 1
+            elif estado == "cancelada":
+                total_canceladas_hoy += 1
+            elif estado == "atendida":
+                total_atendidas_hoy += 1
+                ganancia_hoy += precio
+
         if fecha_cita == manana_iso:
             citas_manana.append(cita)
 
-        total_citas += 1
-
-        if estado == "activa":
-            total_activas += 1
-        elif estado == "cancelada":
-            total_canceladas += 1
-        elif estado == "atendida":
-            total_atendidas += 1
-            total_cobrado += precio
-
-            if fecha_cita == hoy_iso:
-                ganancia_hoy += precio
-
+        if estado == "atendida":
             if inicio_semana <= fecha_cita <= fin_semana:
                 ganancia_semana += precio
                 ganancias_por_dia[fecha_cita] = ganancias_por_dia.get(fecha_cita, 0) + precio
@@ -702,11 +699,11 @@ def construir_panel_barbero_data(slug_barbero):
         })
 
     stats = {
-        "total_citas": total_citas,
-        "total_activas": total_activas,
-        "total_canceladas": total_canceladas,
-        "total_atendidas": total_atendidas,
-        "total_cobrado": total_cobrado,
+        "total_citas": total_citas_hoy,
+        "total_activas": total_activas_hoy,
+        "total_canceladas": total_canceladas_hoy,
+        "total_atendidas": total_atendidas_hoy,
+        "total_cobrado": ganancia_hoy,
         "ganancia_hoy": ganancia_hoy,
         "ganancia_semana": ganancia_semana,
         "inicio_semana": inicio_semana,
@@ -727,17 +724,6 @@ def construir_panel_barbero_data(slug_barbero):
         "dias_semana": dias_semana,
         "meses_data": meses_data
     }
-@app.route("/")
-def index():
-    barberos = obtener_barberos_activos()
-    hoy_iso = datetime.now(TZ).strftime("%Y-%m-%d")
-    return render_template(
-        "index.html",
-        barberos=barberos,
-        servicios=servicios,
-        hoy_iso=hoy_iso
-    )
-
 @app.route("/reservar/<slug_barbero>")
 def reservar_barbero(slug_barbero):
     barberos = obtener_barberos_activos()
