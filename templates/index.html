@@ -93,38 +93,57 @@
 
 .hero-title {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 26px;
 }
 
-.bienvenida {
+.eyebrow {
     color: #D4AF37;
-    font-size: clamp(22px, 4vw, 34px);
+    font-size: 13px;
     font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: 6px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    opacity: 0.95;
 }
 
-.subtitulo {
+.main-title {
     color: #f5f5f5;
-    font-size: clamp(16px, 2.8vw, 22px);
-    font-weight: 600;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 900;
+    line-height: 1.08;
     margin-bottom: 12px;
 }
 
-.titulo-cita {
+.divider {
+    width: 72px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+    margin: 0 auto 14px auto;
+    border-radius: 999px;
+}
+
+.title-caption {
     color: #D4AF37;
-    font-size: clamp(26px, 5vw, 46px);
-    font-weight: 900;
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 800;
     line-height: 1.1;
+}
+.sub-brand {
+    color: #d9d9d9;
+    font-size: clamp(18px, 3vw, 24px);
+    font-weight: 700;
+    margin-bottom: 12px;
 }
 </style>
 </head>
 <body>
 <div class="container">
-    <div class="hero-title">
-    <div class="bienvenida">Bienvenido a Upperline Studio</div>
-    <div class="subtitulo">(Junior The Barber)</div>
-    <div class="titulo-cita">Agendar cita</div>
+   <div class="hero-title">
+    <div class="eyebrow">Bienvenido a</div>
+    <div class="main-title">Upperline Studio</div>
+    <div class="sub-brand">Junior The Barber</div>
+    <div class="divider"></div>
+    <div class="title-caption">Agenda tu cita</div>
 </div>
 
     {% with messages = get_flashed_messages() %}
