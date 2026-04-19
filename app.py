@@ -724,6 +724,18 @@ def construir_panel_barbero_data(slug_barbero):
         "dias_semana": dias_semana,
         "meses_data": meses_data
     }
+
+@app.route("/")
+def index():
+    barberos = obtener_barberos_activos()
+    hoy_iso = datetime.now(TZ).strftime("%Y-%m-%d")
+
+    return render_template(
+        "index.html",
+        barberos=barberos,
+        servicios=servicios,
+        hoy_iso=hoy_iso
+    )
 @app.route("/reservar/<slug_barbero>")
 def reservar_barbero(slug_barbero):
     barberos = obtener_barberos_activos()
@@ -745,6 +757,7 @@ def reservar_barbero(slug_barbero):
         servicios=servicios,
         hoy_iso=hoy_iso
     )
+
 
 @app.route("/webhook", methods=["GET"])
 def verify_webhook():
