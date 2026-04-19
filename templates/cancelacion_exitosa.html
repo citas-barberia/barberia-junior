@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancelación</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0f0f10;
+            color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 460px;
+            margin: 60px auto;
+            background: #1b1b1c;
+            border-radius: 24px;
+            padding: 28px 24px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        h1 {
+            color: #D4AF37;
+            margin-top: 0;
+            font-size: 34px;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.5;
+            color: #ddd;
+            margin-bottom: 24px;
+        }
+
+        a {
+            display: inline-block;
+            text-decoration: none;
+            background: #D4AF37;
+            color: #111;
+            padding: 14px 22px;
+            border-radius: 14px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 30px auto;
+                padding: 22px 18px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            p {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cancelación</h1>
+        <p>{{ mensaje or "Tu cita fue cancelada correctamente." }}</p>
+        <a href="/">Volver al inicio</a>
+    </div>
+</body>
+</html>

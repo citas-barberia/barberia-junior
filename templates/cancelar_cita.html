@@ -2,23 +2,188 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cancelar cita</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0f0f10;
+            color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 40px auto;
+            background: #1b1b1c;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 24px;
+            color: #D4AF37;
+            font-size: 36px;
+            text-align: center;
+        }
+
+        .card-info {
+            display: grid;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .item {
+            background: #242425;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 14px 16px;
+        }
+
+        .label {
+            font-size: 13px;
+            color: #bdbdbd;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 6px;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        .estado {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .estado.activa {
+            background: #198754;
+            color: white;
+        }
+
+        .estado.cancelada {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-cancelar {
+            width: 100%;
+            border: none;
+            border-radius: 16px;
+            padding: 16px;
+            background: #dc3545;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-cancelar:hover {
+            opacity: 0.95;
+        }
+
+        .msg {
+            text-align: center;
+            font-size: 18px;
+            color: #d9d9d9;
+            background: #242425;
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .volver {
+            display: block;
+            text-align: center;
+            margin-top: 18px;
+            color: #a0a0a0;
+            text-decoration: none;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 14px;
+            }
+
+            .container {
+                margin: 20px auto;
+                padding: 18px;
+                border-radius: 20px;
+            }
+
+            h1 {
+                font-size: 30px;
+            }
+
+            .value {
+                font-size: 20px;
+            }
+
+            .btn-cancelar {
+                font-size: 17px;
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Cancelar cita</h1>
+    <div class="container">
+        <h1>Cancelar cita</h1>
 
-    <p><strong>Cliente:</strong> {{ cita.cliente }}</p>
-    <p><strong>Servicio:</strong> {{ cita.servicio }}</p>
-    <p><strong>Fecha:</strong> {{ cita.fecha_bonita }}</p>
-    <p><strong>Hora:</strong> {{ cita.hora_bonita }}</p>
-    <p><strong>Estado:</strong> {{ cita.estado }}</p>
+        <div class="card-info">
+            <div class="item">
+                <div class="label">Cliente</div>
+                <div class="value">{{ cita.cliente }}</div>
+            </div>
 
-    {% if cita.estado != "cancelada" %}
-    <form method="POST" action="{{ url_for('confirmar_cancelacion', token=cita.token_cancelacion) }}">
-        <button type="submit">Cancelar cita</button>
-    </form>
-    {% else %}
-    <p>Esta cita ya fue cancelada.</p>
-    {% endif %}
+            <div class="item">
+                <div class="label">Servicio</div>
+                <div class="value">{{ cita.servicio }}</div>
+            </div>
+
+            <div class="item">
+                <div class="label">Fecha</div>
+                <div class="value">{{ cita.fecha_bonita }}</div>
+            </div>
+
+            <div class="item">
+                <div class="label">Hora</div>
+                <div class="value">{{ cita.hora_bonita }}</div>
+            </div>
+
+            <div class="item">
+                <div class="label">Estado</div>
+                <div class="value">
+                    <span class="estado {{ cita.estado }}">{{ cita.estado }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if cita.estado != "cancelada" %}
+        <form method="POST" action="{{ url_for('confirmar_cancelacion', token=cita.token_cancelacion) }}">
+            <button type="submit" class="btn-cancelar">Cancelar cita</button>
+        </form>
+        {% else %}
+        <div class="msg">Esta cita ya fue cancelada.</div>
+        {% endif %}
+
+        <a href="/" class="volver">Volver al inicio</a>
+    </div>
 </body>
 </html>
