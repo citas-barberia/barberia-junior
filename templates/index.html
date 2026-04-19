@@ -24,13 +24,6 @@
         border: 1px solid rgba(255,255,255,0.05);
     }
 
-    h1 {
-        color: #D4AF37;
-        text-align: center;
-        margin-top: 0;
-        margin-bottom: 20px;
-        font-size: clamp(28px, 6vw, 42px);
-    }
 
     label {
         display: block;
@@ -97,11 +90,42 @@
             font-size: 15px;
         }
     }
+
+.hero-title {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.bienvenida {
+    color: #D4AF37;
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 6px;
+}
+
+.subtitulo {
+    color: #f5f5f5;
+    font-size: clamp(16px, 2.8vw, 22px);
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.titulo-cita {
+    color: #D4AF37;
+    font-size: clamp(26px, 5vw, 46px);
+    font-weight: 900;
+    line-height: 1.1;
+}
 </style>
 </head>
 <body>
 <div class="container">
-    <h1>Agendar cita</h1>
+    <div class="hero-title">
+    <div class="bienvenida">Bienvenido a Upperline Studio</div>
+    <div class="subtitulo">(Junior The Barber)</div>
+    <div class="titulo-cita">Agendar cita</div>
+</div>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
