@@ -725,6 +725,58 @@ def construir_panel_barbero_data(slug_barbero):
         "meses_data": meses_data
     }
 
+
+def enviar_whatsapp_template_cancelacion_barbero(numero, cliente, servicio, fecha, hora):
+    if not numero:
+        return False
+
+    numero = normalizar_numero_cr(numero)
+    token = (os.getenv("WHATSAPP_TOKEN") or "").strip()
+    phone_number_id = (os.getenv("PHONE_NUMBER_ID") or "").strip()
+
+    if not token or not phone_number_id:
+        print("Faltan WHATSAPP_TOKEN o PHONE_NUMBER_ID")
+        return False
+
+    url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "messaging_product": "whatsapp",
+        "to": numero,
+        "type": "template",
+        "template": {
+            "name": "cliente_cancelo_cita_barbero",
+            "language": {
+                "code": "es_CR"
+            },
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": str(cliente)},
+                        {"type": "text", "text": str(servicio)},
+                        {"type": "text", "text": str(fecha)},
+                        {"type": "text", "text": str(hora)}
+                    ]
+                }
+            ]
+        }
+    }
+
+    try:
+        print("PAYLOAD CANCELACION BARBERO:", data)
+        r = requests.post(url, headers=headers, json=data, timeout=15)
+        print("WHATSAPP CANCELACION BARBERO STATUS:", r.status_code)
+        print("WHATSAPP CANCELACION BARBERO RESPUESTA:", r.text)
+        return r.status_code < 400
+    except Exception as e:
+        print("Error enviando template cancelación al barbero:", e)
+        return False    
+
 @app.route("/")
 def index():
     barberos = obtener_barberos_activos()
@@ -1060,14 +1112,17 @@ def confirmar_cancelacion(token):
             f"Tu cita de {cita.get('servicio')} para el {formatear_fecha_es(cita.get('fecha'))} a las {formatear_hora_12h(cita.get('hora'))} fue cancelada correctamente."
         )
 
-    # Notificación opcional al barbero
+    # Notificación al barbero por plantilla
     barbero = obtener_barbero_por_id(cita.get("barbero_id"))
     telefono_barbero = barbero.get("telefono") if barbero else None
     if telefono_barbero:
-        enviar_whatsapp(
-            telefono_barbero,
-            f"El cliente {cita.get('cliente')} canceló la cita de {cita.get('servicio')} para el {formatear_fecha_es(cita.get('fecha'))} a las {formatear_hora_12h(cita.get('hora'))}."
-        )
+        enviar_whatsapp_template_cancelacion_barbero(
+        numero=telefono_barbero,
+        cliente=cita.get("cliente"),
+        servicio=cita.get("servicio"),
+        fecha=formatear_fecha_es(cita.get("fecha")),
+        hora=formatear_hora_12h(cita.get("hora"))
+    )
 
     return render_template("cancelacion_exitosa.html", mensaje="Tu cita fue cancelada correctamente.")
 
