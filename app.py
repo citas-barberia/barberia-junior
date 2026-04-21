@@ -86,6 +86,57 @@ def enviar_whatsapp_template_confirmacion_cancelable(
         print("Error enviando template confirmacion cancelable:", e)
         return False
 
+def enviar_whatsapp_template_cancelacion_cliente(numero, cliente, servicio, fecha, hora):
+    if not numero:
+        return False
+
+    numero = normalizar_numero_cr(numero)
+    token = (os.getenv("WHATSAPP_TOKEN") or "").strip()
+    phone_number_id = (os.getenv("PHONE_NUMBER_ID") or "").strip()
+
+    if not token or not phone_number_id:
+        print("Faltan WHATSAPP_TOKEN o PHONE_NUMBER_ID")
+        return False
+
+    url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "messaging_product": "whatsapp",
+        "to": numero,
+        "type": "template",
+        "template": {
+            "name": "barbero_cancelo_cita_cliente",
+            "language": {
+                "code": "es_CR"
+            },
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": str(cliente)},
+                        {"type": "text", "text": str(servicio)},
+                        {"type": "text", "text": str(fecha)},
+                        {"type": "text", "text": str(hora)}
+                    ]
+                }
+            ]
+        }
+    }
+
+    try:
+        print("PAYLOAD CANCELACION CLIENTE:", data)
+        r = requests.post(url, headers=headers, json=data, timeout=15)
+        print("WHATSAPP CANCELACION CLIENTE STATUS:", r.status_code)
+        print("WHATSAPP CANCELACION CLIENTE RESPUESTA:", r.text)
+        return r.status_code < 400
+    except Exception as e:
+        print("Error enviando template cancelación al cliente:", e)
+        return False
+
 def obtener_rango_semana_actual():
     ahora = datetime.now(TZ)
     hoy = ahora.date()
@@ -1284,7 +1335,34 @@ def panel_cancelar():
     if not cita_id:
         return jsonify({"ok": False, "mensaje": "Falta el id de la cita"}), 400
 
+    data = supabase_request(
+        "GET",
+        "citas",
+        params={
+            "select": "id,cliente,cliente_id,servicio,fecha,hora,estado",
+            "id": f"eq.{cita_id}",
+            "limit": "1"
+        }
+    )
+
+    if not data:
+        return jsonify({"ok": False, "mensaje": "No se encontró la cita"}), 404
+
+    cita = data[0]
+
     cambiar_estado_cita(cita_id, "cancelada")
+
+    telefono_cliente = cita.get("cliente_id")
+    if telefono_cliente:
+        ok_cliente = enviar_whatsapp_template_cancelacion_cliente(
+            numero=telefono_cliente,
+            cliente=cita.get("cliente"),
+            servicio=cita.get("servicio"),
+            fecha=formatear_fecha_es(cita.get("fecha")),
+            hora=formatear_hora_12h(cita.get("hora"))
+        )
+        print("ENVIO CANCELACION CLIENTE:", ok_cliente)
+
     return jsonify({"ok": True, "mensaje": "Cita cancelada correctamente."})
 
 @app.route("/panel/atendida", methods=["POST"])
