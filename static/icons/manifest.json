@@ -1,7 +1,7 @@
 {
-  "name": "Panel de Junior 2.0",
-  "short_name": "PanelJunior",
-  "start_url": "/panel/junior",
+  "name": "Agendar cita | Upperline Studio",
+  "short_name": "Agendar cita",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0f0f10",
   "theme_color": "#0f0f10",
