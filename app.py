@@ -939,18 +939,17 @@ def guardar():
         hora=hora_db,
         duracion=duracion
     )
-
     print("CITA DEVUELTA:", cita)
 
     if not cita or not cita.get("ok"):
         error_text = (cita or {}).get("error_text", "")
 
-    if "unique_cita_cliente_hora" in error_text or "duplicate key value" in error_text:
+        if "unique_cita_cliente_hora" in error_text or "duplicate key value" in error_text:
             flash("Esta cita ya fue registrada. Revisá tu WhatsApp o elegí otro horario.")
-    else:
+        else:
             flash("No se pudo guardar la cita. Intentá de nuevo.")
 
-    return redirect(url_for("index"))
+        return redirect(url_for("index"))
 
     cita = cita.get("data")
     barbero = obtener_barbero_por_id(barbero_id)
