@@ -228,6 +228,28 @@ async function actualizarHoras() {
         select.innerHTML = '<option value="">Error al cargar horas</option>';
     }
 }
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector('form[action="/guardar"]');
+
+  if (!form) return;
+
+  const boton = form.querySelector('button[type="submit"]');
+  let enviando = false;
+
+  form.addEventListener("submit", function (e) {
+    if (enviando) {
+      e.preventDefault();
+      return;
+    }
+
+    enviando = true;
+
+    if (boton) {
+      boton.disabled = true;
+      boton.innerText = "Agendando...";
+    }
+  });
+});
 </script>
 </body>
 </html>

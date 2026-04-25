@@ -546,7 +546,7 @@ def obtener_citas_con_barbero():
     )
     return data or []
 
-def supabase_request(method, path, params=None, json_body=None, extra_headers=None):
+def supabase_request(method, path, params=None, json_body=None, extra_headers=None, return_error=False):
     url = f"{SUPABASE_URL.rstrip('/')}/rest/v1/{path}"
     headers = supabase_headers()
     if extra_headers:
@@ -566,13 +566,38 @@ def supabase_request(method, path, params=None, json_body=None, extra_headers=No
             print("Supabase status:", response.status_code)
             print("Supabase response:", response.text)
 
-        response.raise_for_status()
+            if return_error:
+                return {
+                    "ok": False,
+                    "status_code": response.status_code,
+                    "error_text": response.text
+                }
+
+            return None
 
         if response.text:
-            return response.json()
-        return None
+            data = response.json()
+        else:
+            data = None
+
+        if return_error:
+            return {
+                "ok": True,
+                "data": data
+            }
+
+        return data
+
     except Exception as e:
         print("Error Supabase:", e)
+
+        if return_error:
+            return {
+                "ok": False,
+                "status_code": None,
+                "error_text": str(e)
+            }
+
         return None
 
 def obtener_barberos_activos():
@@ -625,7 +650,8 @@ def crear_cita(cliente, cliente_id, barbero_id, servicio, precio, fecha, hora, d
         "POST",
         "citas",
         json_body=body,
-        extra_headers={"Prefer": "return=representation"}
+        extra_headers={"Prefer": "return=representation"},
+        return_error=True
     )
 
 def construir_panel_barbero_data(slug_barbero):
@@ -916,11 +942,17 @@ def guardar():
 
     print("CITA DEVUELTA:", cita)
 
-    if not cita or not isinstance(cita, list) or len(cita) == 0:
-        print("ERROR: crear_cita no devolvió datos")
-        flash("No se pudo guardar la cita.")
-        return redirect(url_for("index"))
+    if not cita or not cita.get("ok"):
+        error_text = (cita or {}).get("error_text", "")
 
+    if "unique_cita_cliente_hora" in error_text or "duplicate key value" in error_text:
+            flash("Esta cita ya fue registrada. Revisá tu WhatsApp o elegí otro horario.")
+    else:
+            flash("No se pudo guardar la cita. Intentá de nuevo.")
+
+    return redirect(url_for("index"))
+
+    cita = cita.get("data")
     barbero = obtener_barbero_por_id(barbero_id)
     nombre_barbero = barbero["nombre"] if barbero else "tu barbero"
     telefono_barbero = barbero["telefono"] if barbero else None
