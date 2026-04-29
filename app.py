@@ -14,6 +14,7 @@ TZ = ZoneInfo(os.getenv("TZ", "America/Costa_Rica"))
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 SUPABASE_TIMEOUT = 10
+APP_URL = os.getenv("APP_URL", "https://barberia-junior.onrender.com").rstrip("/")
 
 servicios = {
     "Corte Difuminado": 5000,
@@ -788,7 +789,7 @@ def construir_panel_barbero_data(slug_barbero):
         "nombre_barbero": barbero_obj["nombre"]
     }
 
-    reserva_url = url_for("reservar_barbero", slug_barbero=barbero_obj["slug"], _external=True)
+    reserva_url = f"{APP_URL}{url_for('reservar_barbero', slug_barbero=barbero_obj['slug'])}"
     qr_url = f"https://quickchart.io/qr?text={quote(reserva_url)}&size=220"
 
     return {
@@ -965,7 +966,7 @@ def guardar():
         flash("La cita se creó, pero no se pudo generar el link de cancelación.")
         return redirect(url_for("index"))
 
-    cancelar_url = url_for("ver_cancelacion", token=token_cancelacion, _external=True)
+    cancelar_url = f"{APP_URL}{url_for('ver_cancelacion', token=token_cancelacion)}"
     print("LINK CANCELACION:", cancelar_url)
 
     ok_confirmacion = enviar_whatsapp_template_confirmacion_cancelable(
@@ -1344,7 +1345,7 @@ def panel_barbero(slug_barbero):
         "nombre_barbero": barbero_obj["nombre"]
     }
 
-    reserva_url = url_for("reservar_barbero", slug_barbero=barbero_obj["slug"], _external=True)
+    reserva_url = f"{APP_URL}{url_for('reservar_barbero', slug_barbero=barbero_obj['slug'])}"
     qr_url = f"https://quickchart.io/qr?text={quote(reserva_url)}&size=220"
 
     return render_template(
