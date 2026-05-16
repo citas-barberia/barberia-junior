@@ -930,6 +930,24 @@ def guardar():
         flash("Hora inválida.")
         return redirect(url_for("index"))
 
+    # Verificar si el horario ya está ocupado
+    existe = supabase_request(
+        "GET",
+        "citas",
+        params={
+            "select": "id",
+            "barbero_id": f"eq.{barbero_id}",
+            "fecha": f"eq.{fecha}",
+            "hora": f"eq.{hora_db}",
+            "estado": "in.(activa,atendida)",
+            "limit": "1"
+        }
+    )
+
+    if existe:
+        flash("Ese horario ya fue reservado. Por favor elegí otra hora.")
+        return redirect(url_for("index"))
+
     cita = crear_cita(
         cliente=cliente,
         cliente_id=telefono,
